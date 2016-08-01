@@ -1,22 +1,36 @@
-# Eventually it would be nice to have some way to automatically extract data from
-# the PDF versions of the management plans. This can be done using the xPDF suite of
-# packages, but is more straightforward in Windows (which I successfully made work) 
-# than Mac (which I did not). Much of this comes from an excellent guide to PDF text 
-# extraction by Clay Ford at Virginia:
-# http://data.library.virginia.edu/reading-pdf-files-into-r-for-text-mining/
+############################################################################
+### Purpose of this skript module 05 is to:
+### 
+### 05.1. Text mining Natura2000 plans
+### 05.2. ...
+###
+### General comments:
+### Eventually it would be nice to have some way to automatically extract data from
+### the PDF versions of the management plans. This can be done using the xPDF suite of
+### packages, but is more straightforward in Windows (which I successfully made work) 
+### than Mac (which I did not). Much of this comes from an excellent guide to PDF text 
+### extraction by Clay Ford at Virginia:
+### http://data.library.virginia.edu/reading-pdf-files-into-r-for-text-mining/
+###
+### Authors: CH ...
+############################################################################
+
+############################################################################
+### 05.1. Text mining Natura2000 plans
+### note that at the moment I am using the papers as an example
+### because somebody removed all of the Natura 2000 management plans from Dropbox!
+### (GZ did that because many people had problems with dropbox space)
+############################################################################
 
 # Text mining Natura2000 plans ####
 
-# Install and load packages
-install.packages("tm")
-install.packages("SnowballC")
-library(tm)
-library(SnowballC)
-
 # Find location of PDFs - note that at the moment I am using the papers as an example
 # because somebody removed all of the Natura 2000 management plans from Dropbox!
-setwd("/Users/christopherhassall/Dropbox/FAWKES II/Literature")
-setwd("C:\\Users\\fbscha\\Dropbox\\FAWKES II\\Literature")
+# setwd("/Users/christopherhassall/Dropbox/FAWKES II/Literature")
+# setwd("C:\\Users\\fbscha\\Dropbox\\FAWKES II\\Literature")
+
+# set wd to path2temp where files have been downloaded and extracted
+setwd(path2temp %+% "/") 
 
 # Retrieve a list of PDFs from that folder
 files <- list.files(pattern = "pdf$")
