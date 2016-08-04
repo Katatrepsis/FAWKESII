@@ -4,7 +4,7 @@
 ### 02.1. Get Natura 2000 data
 ###
 ### General comments:
-### * 
+### * Should load all files needed from the web. Best to place a file somewhere in your dropbox and copy the share link here (right click). You need to change dl=0 to dl=1 at the end of the link to make it work.
 ###
 ### Authors: CH, MB, ...
 ############################################################################
