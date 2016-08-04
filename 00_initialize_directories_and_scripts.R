@@ -34,10 +34,10 @@
   cu <- Sys.info()["user"]
   cn <- Sys.info()["nodename"]
   
-  if (cu == "chassal") ## example, please adjust
+  if (cu == "fbscha") ## example, please adjust
   {
-    path2temp <- "/Users/xxx/documents/projekts/FAWKESII/temp/" 
-    path2wd <- "/Users/xxx/documents/git/FAWKESII/" 
+    path2temp <- "H:/Document Files/Research/FAWKES II/Temp/" 
+    path2wd <- "H:/Document Files/Research/FAWKES II/git/" 
 
       } else if (cn == "juro-MacBookPro"){
     path2wd <- "/home/juro/git/FAWKESII/" #MB

@@ -19,9 +19,10 @@ needed_libs <- c("devtools",# needed for library googlesheets
                  "raster",# for adding map data
                  "rgdal", # for loading map data
                  "rgeos", # dependency for rgdal
-                 "letsR", #
-                 "tm", #
-                 "SnowballC" # 
+                 "letsR", # for macroecological data analysis (IUCN status)
+                 "tm", # for text mining
+                 "SnowballC", # for text mining
+                 "XLConnect" # for reading in data from online Excel files (pressures data)
 )
 usePackage <- function(p) {
   if (!is.element(p, installed.packages()[,1]))

@@ -22,12 +22,10 @@ if (file.exists("PublicNatura2000End2015_csv.zip")==FALSE){
 } else {unzip("PublicNatura2000End2015_csv.zip")}
 
 ############################################################################
-### 02.2. Get literature for text analysis (to be replaced for management plans)
+### 02.2. Get management plans for text analysis 
 ############################################################################
 
-if (file.exists("Literature.zip")==FALSE){
-  download.file("https://www.dropbox.com/sh/chnaavz6mj83ng0/AAAZElcg1VeWLzqUP8c3AkaCa?dl=1", "Literature.zip", mode="wb")
-  unzip("Literature.zip")
-} else {unzip("Literature.zip")}
+# CH: Currently the 05 script pulls the PDFs from the web directly (as GZ was doing) and puts them in
+# the temp directory, but we can put the code here if you like?
 
 
