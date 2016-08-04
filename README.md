@@ -20,3 +20,5 @@ a script for downloading IUCN data for species that are focal species in the Nat
 
 05_Text_mining_Natura2000.R: 
 an R script that provides basic text mining capabilities from folders full of PDFs. Intended to be used to look for patterns in the management plans for Natura2000 sites.
+
+All script files have a unified header stating their purpose and sub-structure as well as authors. Sub-scripts have a smaller header with an own number (e.g. 00.2.) and within the actual code commenting is done as users may like it.
