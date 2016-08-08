@@ -42,6 +42,10 @@
       } else if (cn == "juro-MacBookPro"){
     path2wd <- "/home/juro/git/FAWKESII/" #MB
     path2temp <- "/home/juro/tmp/FAWKESII/" #MB
+    
+      } else if (cn == "CLE179L"){
+        path2wd <- "C:/Users/cord/Documents/FAWKESII/" #AC
+        path2temp <- "C:/Daten/Konferenzen_Workshops/2016/FAWKES_2/tmp_git/" #AC
 
   }  
   return(list(path2temp,path2wd))
