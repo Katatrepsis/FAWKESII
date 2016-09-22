@@ -100,4 +100,28 @@ DefineTier4<-ImpactDefinitions$Descript_EN[match(rownames(Tier4Ranked),ImpactDef
 Tier4Summary<-cbind(Tier4Ranked,DefineTier4)
 colnames(Tier4Summary)<-c("Number of sites","Type of impact")
 
+############################################################################
+### 04.2. parsing database using lookup table from g.docs
+###
+###
+############################################################################
+
+N2000Impact<-read.csv("IMPACT.csv")
+
+for(i in 11:29) {
+  
+  
+  
+}
+
+
+length(N2000Impact$IMPACTCODE[N2000Impact$IMPACTCODE=="A01"])
+
+
+
+
+
+data$relation
+
+
 setwd(path2wd)

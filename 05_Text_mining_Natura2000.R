@@ -30,7 +30,7 @@ setwd(path2temp %+% "/")
 management<-read.csv("MANAGEMENT.csv")
 
 # Find UK sites for which management plans are available PDFs online
-UKmanagement<-subset(management,substr(management$ï..SITECODE,1,2)=="UK" & management$MANAG_PLAN_URL!="NULL")
+UKmanagement<-subset(management,substr(management$SITECODE,1,2)=="UK" & management$MANAG_PLAN_URL!="NULL")
 # Remove duplicates, which are due to submissions by both NE and CCW
 UKmanagement<-unique(UKmanagement[,c(1,6)])
 
