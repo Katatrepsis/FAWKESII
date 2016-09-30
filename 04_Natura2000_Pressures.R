@@ -108,10 +108,31 @@ colnames(Tier4Summary)<-c("Number of sites","Type of impact")
 
 N2000Impact<-read.csv("IMPACT.csv")
 
-for(i in 11:29) {
+#condense threats according to relation
+
+
+
+library(plyr)
+counttab<-count(N2000Impact$IMPACTCODE)
+names(counttab)<-c("ACT_Code","count" )
+
+# subdata<-data[which(data$Cultivated.crops=='x'),1:11 ]
+# mergedata<-merge(subdata, counttab, by="ACT_Code")
+# aggdata<-aggregate(mergedata$count, by=list(mergedata$relation), FUN=sum)
+# pie(aggdata$x, labels=aggdata$Group.1, main="Cultivated crops")
+
+
+#subdata<-data[which(data$Cultivated.crops=='x'), ]
+for(i in 11:28) {
+
+  subdata<-data[which(data[,i]=='x'),1:11 ]
+  mergedata<-merge(subdata, counttab, by="ACT_Code")
   
-  
-  
+  #if (length(mergedata$relation)>1) { 
+  aggdata<-aggregate(mergedata$count, by=list(mergedata$relation), FUN=sum)
+  #} else {
+  #}
+  pie(aggdata$x, labels=aggdata$Group.1, main=paste(names(data[i]), "\n", sum(aggdata$x)))
 }
 
 

@@ -43,7 +43,7 @@ data$ACT_Code <- as.factor(data$ACT_Code)
 data$relation <- as.factor(data$relation)
 
 ### remove uneeded rows
-data[!(is.na(data$relation) | data$relation==""), ]
+data<-data[!(is.na(data$relation) | data$relation==""), ]
 
 ############################################################################
 ### 02.2. Get management plans for text analysis 
