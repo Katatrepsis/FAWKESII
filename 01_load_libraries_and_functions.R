@@ -22,7 +22,10 @@ needed_libs <- c("devtools",# needed for library googlesheets
                  "letsR", # for macroecological data analysis (IUCN status)
                  "tm", # for text mining
                  "SnowballC", # for text mining
-                 "XLConnect" # for reading in data from online Excel files (pressures data)
+                 "XLConnect", # for reading in data from online Excel files (pressures data)
+                 "igraph", # for network diagrams
+                 "cooccur", # for associations between stressors and services
+                 "treemap" # for visualising the threats and services
 )
 usePackage <- function(p) {
   if (!is.element(p, installed.packages()[,1]))

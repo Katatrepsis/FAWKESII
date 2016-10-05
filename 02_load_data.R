@@ -32,18 +32,18 @@ gs_ls() #once authorized, this will list the files you have in GS
 
 ### load mapping table
 threats_services_gsheet<- gs_title("Mapping pressures/impacts to ESS")
-data <- gs_read(threats_services_gsheet, ws = "Leeds_mapping",check.names=TRUE, range = cell_rows(8:424)) #consume data from "Leeds_mapping", skip first rows
-data<-data[-c(1,2),]
-data<-as.data.frame(data) #some functions don't like the tbl.df data type
+MappingData <- gs_read(threats_services_gsheet, ws = "Leeds_mapping",check.names=TRUE, range = cell_rows(8:424)) #consume data from "Leeds_mapping", skip first rows
+MappingData<-MappingData[-c(1,2),]
+MappingData<-as.data.frame(MappingData) #some functions don't like the tbl.df data type
 ### check variable types 
-str(data)
+str(MappingData)
 
 ### make factors
-data$ACT_Code <- as.factor(data$ACT_Code)
-data$relation <- as.factor(data$relation)
+MappingData$ACT_Code <- as.factor(MappingData$ACT_Code)
+MappingData$relation <- as.factor(MappingData$relation)
 
 ### remove uneeded rows
-data<-data[!(is.na(data$relation) | data$relation==""), ]
+MappingData<-MappingData[!(is.na(MappingData$relation) | MappingData$relation==""), ]
 
 ############################################################################
 ### 02.2. Get management plans for text analysis 
