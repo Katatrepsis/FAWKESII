@@ -105,43 +105,43 @@ colnames(Tier4Summary)<-c("Number of sites","Type of impact")
 ### (run 04.1 to clean N2000Impact data first)
 ### (deprecated, based on 04.4?)
 ############################################################################
-
-# Condense threats according to relation
-library(plyr)
-counttab<-count(N2000Impact$IMPACTCODE)
-names(counttab)<-c("ACT_Code","count" )
-
-# subdata<-MappingData[which(MappingData$Cultivated.crops=='x'),1:11 ]
+# 
+# # Condense threats according to relation
+# library(plyr)
+# counttab<-count(N2000Impact$IMPACTCODE)
+# names(counttab)<-c("ACT_Code","count" )
+# 
+# # subdata<-MappingData[which(MappingData$Cultivated.crops=='x'),1:11 ]
+# # mergedata<-merge(subdata, counttab, by="ACT_Code")
+# # aggdata<-aggregate(mergedata$count, by=list(mergedata$relation), FUN=sum)
+# # pie(aggdata$x, labels=aggdata$Group.1, main="Cultivated crops")
+# 
+# 
+# #subdata<-MappingData[which(MappingData$Cultivated.crops=='x'), ]
+# par(mfrow=c(1,1),mar=c(1,2,2,1))
+# for(i in 11:28) {
+# 
+#   subdata<-MappingData[which(MappingData[,i]=='x'),1:11 ]
+#   mergedata<-merge(subdata, counttab, by="ACT_Code")
+#   
+#   #if (length(mergedata$relation)>1) { 
+#   aggdata<-aggregate(mergedata$count, by=list(mergedata$relation), FUN=sum)
+#   #} else {
+#   #}
+#   pie(aggdata$x, radius=log(sum(aggdata$x))/log(32177),labels=aggdata$Group.1, main=paste(names(data[i]), "\n", sum(aggdata$x)))
+# }
+# 
+# 
+# length(N2000Impact$IMPACTCODE[N2000Impact$IMPACTCODE=="A01"])
+# 
+# 
+# subdata<-MappingData[which(MappingData[,i]=='x'),1:11 ]
 # mergedata<-merge(subdata, counttab, by="ACT_Code")
-# aggdata<-aggregate(mergedata$count, by=list(mergedata$relation), FUN=sum)
-# pie(aggdata$x, labels=aggdata$Group.1, main="Cultivated crops")
-
-
-#subdata<-MappingData[which(MappingData$Cultivated.crops=='x'), ]
-par(mfrow=c(6,3),mar=c(1,2,2,1))
-for(i in 11:28) {
-
-  subdata<-MappingData[which(MappingData[,i]=='x'),1:11 ]
-  mergedata<-merge(subdata, counttab, by="ACT_Code")
-  
-  #if (length(mergedata$relation)>1) { 
-  aggdata<-aggregate(mergedata$count, by=list(mergedata$relation), FUN=sum)
-  #} else {
-  #}
-  pie(aggdata$x, radius=log(sum(aggdata$x))/log(32177),labels=aggdata$Group.1, main=paste(names(data[i]), "\n", sum(aggdata$x)))
-}
-
-
-length(N2000Impact$IMPACTCODE[N2000Impact$IMPACTCODE=="A01"])
-
-
-subdata<-MappingData[which(MappingData[,i]=='x'),1:11 ]
-mergedata<-merge(subdata, counttab, by="ACT_Code")
-
-MappingData$relation
-
-
-setwd(path2wd)
+# 
+# MappingData$relation
+# 
+# 
+# setwd(path2wd)
 
 ############################################################################
 ### 04.3. Networks showing associations between threats and services
@@ -151,7 +151,7 @@ setwd(path2wd)
 
 ### 04.3.1: Associations of threats
 # Create a table of threats by sites
-ThreatAssoc<-xtabs(~N2000Impact$ï..SITECODE+N2000Impact$Tier1Impact)
+ThreatAssoc<-xtabs(~N2000Impact$SITECODE+N2000Impact$Tier1Impact)
 ThreatAssoc<-as.data.frame.matrix(ThreatAssoc)
 
 # Create a co-occurrence matrix of threats
@@ -209,13 +209,13 @@ ServiceGroups<-c("CultCrop","WildPlants","PlantMaterialAg","Fibre","PlantEnergy"
 "Experiential","Physical","Scientific")
 
 # Create a matrix of site x service group
-ServiceBySite<-matrix(ncol=length(ServiceGroups),nrow=length(unique(N2000Impact2$ï..SITECODE)))
-rownames(ServiceBySite)<-unique(N2000Impact2$ï..SITECODE)
+ServiceBySite<-matrix(ncol=length(ServiceGroups),nrow=length(unique(N2000Impact2$SITECODE)))
+rownames(ServiceBySite)<-unique(N2000Impact2$SITECODE)
 colnames(ServiceBySite)<-ServiceGroups
 # This is the ugly bit, and takes a few minutes to run
 for(x in 1:nrow(ServiceBySite)){
   # For each unique site ID code, extract a list of threats that have corresponding services
-  SiteThreats<-na.omit(subset(N2000Impact2,N2000Impact2$ï..SITECODE==rownames(ServiceBySite)[x])$ThreatWithService)
+  SiteThreats<-na.omit(subset(N2000Impact2,N2000Impact2$SITECODE==rownames(ServiceBySite)[x])$ThreatWithService)
   # Remove the rows that did not have services
   SiteThreats<-SiteThreats[which(SiteThreats!="NA")]
   # Extract the rows from the mapping table that contain the services associated with those threats
@@ -323,12 +323,264 @@ LongService<-rep(colnames(ThreatByService),each=nrow(ThreatByService))
 # Modify the dataframe so that the formats are correct for treemap()
 LongThreatByService<-as.data.frame(cbind(LongService,LongThreat,ThreatFreq=as.vector(as.numeric(ThreatFreq))))
 LongThreatByService<-transform(LongThreatByService, ThreatFreq = as.numeric(ThreatFreq))
+LongThreatByService<-LongThreatByService[which(LongThreatByService$ThreatFreq>1),]
 treemap(LongThreatByService,c("LongService","LongThreat"),vSize="ThreatFreq")
 
+############################################################################
+### 04.5. Visualisation of threats by services provided by positive/negative
+### 
+###
+############################################################################
+
+### First: only positive impacts
+
+N2000Impact4<-subset(N2000Impact2,N2000Impact2$ThreatWithService!="NA")
+N2000Impact4<-subset(N2000Impact4,N2000Impact4$IMPACT_TYPE=="P") # P for positive
+N2000Impact4_HIGH<-subset(N2000Impact4,N2000Impact4$INTENSITY=="HIGH")
+N2000Impact4_MEDIUM<-subset(N2000Impact4,N2000Impact4$INTENSITY=="MEDIUM")
+N2000Impact4_LOW<-subset(N2000Impact4,N2000Impact4$INTENSITY=="LOW")
+
+# Calculate the number of services across the site network
+SumThreatHIGHs<-as.matrix(table(N2000Impact4_HIGH$ThreatWithService))
+
+# Using the mapping data, we can create a matrix that converts the number of
+# each ThreatHIGH into the number of each service provided
+ThreatHIGHByService<-matrix(ncol=19,nrow=nrow(SumThreatHIGHs))
+colnames(ThreatHIGHByService)<-ServiceGroups
+rownames(ThreatHIGHByService)<-rownames(SumThreatHIGHs)
+# For each of the ThreatHIGHs, we specify the number of times that that ThreatHIGH indicates
+# a service, using a matrix
+for(x in 1:nrow(ThreatHIGHByService)){
+  # Extract the rows from the mapping table that contain the services associated with those ThreatHIGHs
+  SiteThreatHIGHsMapped<-subset(MappingData,MappingData$relation %in% rownames(SumThreatHIGHs)[x])
+  # For each service group, check whether the site had a ThreatHIGH that indicates that service is present
+  for(y in 1:ncol(ThreatHIGHByService)){
+    # The cells in the matrix correspond to the frequency with which each ThreatHIGH leads to each
+    # service. Note that this will mean "double counting", but that is unavoidable due to the
+    # potential multiple services indicated by each ThreatHIGH.
+    if("x" %in% SiteThreatHIGHsMapped[,10+y]) {ThreatHIGHByService[x,y]<-SumThreatHIGHs[x]} else {ThreatHIGHByService[x,y]<-0}
+  }
+}
+
+# Rearrange the "wide" matrix into a "long" data frame for use in the treemap() function
+LongThreatHIGHByService<-matrix(nrow=ncol(ThreatHIGHByService)*nrow(ThreatHIGHByService),ncol=3)
+ThreatHIGHFreq<-as.vector(ThreatHIGHByService)
+LongThreatHIGH<-rep(rownames(ThreatHIGHByService),19)
+LongServiceHIGH<-rep(colnames(ThreatHIGHByService),each=nrow(ThreatHIGHByService))
+
+# Modify the dataframe so that the formats are correct for treemap()
+LongThreatHIGHByService<-as.data.frame(cbind(LongServiceHIGH,LongThreatHIGH,ThreatHIGHFreq=as.vector(as.numeric(ThreatHIGHFreq))))
+LongThreatHIGHByService<-transform(LongThreatHIGHByService, ThreatHIGHFreq = as.numeric(ThreatHIGHFreq))
+LongThreatHIGHByService<-LongThreatHIGHByService[which(LongThreatHIGHByService$ThreatHIGHFreq>1),]
+
+LongThreatHIGHByService$INTENSITY<-c("HIGH")
+colnames(LongThreatHIGHByService)<-c("LongService", "LongThreat", "ThreatFreq", "INTENSITY")
 
 
+# Calculate the number of services across the site network
+SumThreatMEDIUMs<-as.matrix(table(N2000Impact4_MEDIUM$ThreatWithService))
+
+# Using the mapping data, we can create a matrix that converts the number of
+# each ThreatMEDIUM into the number of each service provided
+ThreatMEDIUMByService<-matrix(ncol=19,nrow=nrow(SumThreatMEDIUMs))
+colnames(ThreatMEDIUMByService)<-ServiceGroups
+rownames(ThreatMEDIUMByService)<-rownames(SumThreatMEDIUMs)
+# For each of the ThreatMEDIUMs, we specify the number of times that that ThreatMEDIUM indicates
+# a service, using a matrix
+for(x in 1:nrow(ThreatMEDIUMByService)){
+  # Extract the rows from the mapping table that contain the services associated with those ThreatMEDIUMs
+  SiteThreatMEDIUMsMapped<-subset(MappingData,MappingData$relation %in% rownames(SumThreatMEDIUMs)[x])
+  # For each service group, check whether the site had a ThreatMEDIUM that indicates that service is present
+  for(y in 1:ncol(ThreatMEDIUMByService)){
+    # The cells in the matrix correspond to the frequency with which each ThreatMEDIUM leads to each
+    # service. Note that this will mean "double counting", but that is unavoidable due to the
+    # potential multiple services indicated by each ThreatMEDIUM.
+    if("x" %in% SiteThreatMEDIUMsMapped[,10+y]) {ThreatMEDIUMByService[x,y]<-SumThreatMEDIUMs[x]} else {ThreatMEDIUMByService[x,y]<-0}
+  }
+}
+
+# Rearrange the "wide" matrix into a "long" data frame for use in the treemap() function
+LongThreatMEDIUMByService<-matrix(nrow=ncol(ThreatMEDIUMByService)*nrow(ThreatMEDIUMByService),ncol=3)
+ThreatMEDIUMFreq<-as.vector(ThreatMEDIUMByService)
+LongThreatMEDIUM<-rep(rownames(ThreatMEDIUMByService),19)
+LongServiceMEDIUM<-rep(colnames(ThreatMEDIUMByService),each=nrow(ThreatMEDIUMByService))
+
+# Modify the dataframe so that the formats are correct for treemap()
+LongThreatMEDIUMByService<-as.data.frame(cbind(LongServiceMEDIUM,LongThreatMEDIUM,ThreatMEDIUMFreq=as.vector(as.numeric(ThreatMEDIUMFreq))))
+LongThreatMEDIUMByService<-transform(LongThreatMEDIUMByService, ThreatMEDIUMFreq = as.numeric(ThreatMEDIUMFreq))
+LongThreatMEDIUMByService<-LongThreatMEDIUMByService[which(LongThreatMEDIUMByService$ThreatMEDIUMFreq>1),]
+
+LongThreatMEDIUMByService$INTENSITY<-c("MEDIUM")
+colnames(LongThreatMEDIUMByService)<-c("LongService", "LongThreat", "ThreatFreq", "INTENSITY")
+
+# Calculate the number of services across the site network
+SumThreatLOWs<-as.matrix(table(N2000Impact4_LOW$ThreatWithService))
+
+# Using the mapping data, we can create a matrix that converts the number of
+# each ThreatLOW into the number of each service provided
+ThreatLOWByService<-matrix(ncol=19,nrow=nrow(SumThreatLOWs))
+colnames(ThreatLOWByService)<-ServiceGroups
+rownames(ThreatLOWByService)<-rownames(SumThreatLOWs)
+# For each of the ThreatLOWs, we specify the number of times that that ThreatLOW indicates
+# a service, using a matrix
+for(x in 1:nrow(ThreatLOWByService)){
+  # Extract the rows from the mapping table that contain the services associated with those ThreatLOWs
+  SiteThreatLOWsMapped<-subset(MappingData,MappingData$relation %in% rownames(SumThreatLOWs)[x])
+  # For each service group, check whether the site had a ThreatLOW that indicates that service is present
+  for(y in 1:ncol(ThreatLOWByService)){
+    # The cells in the matrix correspond to the frequency with which each ThreatLOW leads to each
+    # service. Note that this will mean "double counting", but that is unavoidable due to the
+    # potential multiple services indicated by each ThreatLOW.
+    if("x" %in% SiteThreatLOWsMapped[,10+y]) {ThreatLOWByService[x,y]<-SumThreatLOWs[x]} else {ThreatLOWByService[x,y]<-0}
+  }
+}
 
 
+# Rearrange the "wide" matrix into a "long" data frame for use in the treemap() function
+LongThreatLOWByService<-matrix(nrow=ncol(ThreatLOWByService)*nrow(ThreatLOWByService),ncol=3)
+ThreatLOWFreq<-as.vector(ThreatLOWByService)
+LongThreatLOW<-rep(rownames(ThreatLOWByService),19)
+LongServiceLOW<-rep(colnames(ThreatLOWByService),each=nrow(ThreatLOWByService))
+
+# Modify the dataframe so that the formats are correct for treemap()
+LongThreatLOWByService<-as.data.frame(cbind(LongServiceLOW,LongThreatLOW,ThreatLOWFreq=as.vector(as.numeric(ThreatLOWFreq))))
+LongThreatLOWByService<-transform(LongThreatLOWByService, ThreatLOWFreq = as.numeric(ThreatLOWFreq))
+LongThreatLOWByService<-LongThreatLOWByService[which(LongThreatLOWByService$ThreatLOWFreq>1),]
+
+LongThreatLOWByService$INTENSITY<-c("LOW")
+colnames(LongThreatLOWByService)<-c("LongService", "LongThreat", "ThreatFreq", "INTENSITY")
 
 
+LongThreatByServiceINTENSITY<-rbind(LongThreatHIGHByService,LongThreatMEDIUMByService,LongThreatLOWByService)
 
+png(file = path2temp %+% "ThreatByServiceINTENSITY_positive.png")
+treemap(LongThreatByServiceINTENSITY,c("LongService","INTENSITY"),vSize="ThreatFreq")
+dev.off()
+
+
+### Second: only negative impacts
+
+N2000Impact4<-subset(N2000Impact2,N2000Impact2$ThreatWithService!="NA")
+N2000Impact4<-subset(N2000Impact4,N2000Impact4$IMPACT_TYPE=="N") # N for negative
+N2000Impact4_HIGH<-subset(N2000Impact4,N2000Impact4$INTENSITY=="HIGH")
+N2000Impact4_MEDIUM<-subset(N2000Impact4,N2000Impact4$INTENSITY=="MEDIUM")
+N2000Impact4_LOW<-subset(N2000Impact4,N2000Impact4$INTENSITY=="LOW")
+
+# Calculate the number of services across the site network
+SumThreatHIGHs<-as.matrix(table(N2000Impact4_HIGH$ThreatWithService))
+
+# Using the mapping data, we can create a matrix that converts the number of
+# each ThreatHIGH into the number of each service provided
+ThreatHIGHByService<-matrix(ncol=19,nrow=nrow(SumThreatHIGHs))
+colnames(ThreatHIGHByService)<-ServiceGroups
+rownames(ThreatHIGHByService)<-rownames(SumThreatHIGHs)
+# For each of the ThreatHIGHs, we specify the number of times that that ThreatHIGH indicates
+# a service, using a matrix
+for(x in 1:nrow(ThreatHIGHByService)){
+  # Extract the rows from the mapping table that contain the services associated with those ThreatHIGHs
+  SiteThreatHIGHsMapped<-subset(MappingData,MappingData$relation %in% rownames(SumThreatHIGHs)[x])
+  # For each service group, check whether the site had a ThreatHIGH that indicates that service is present
+  for(y in 1:ncol(ThreatHIGHByService)){
+    # The cells in the matrix correspond to the frequency with which each ThreatHIGH leads to each
+    # service. Note that this will mean "double counting", but that is unavoidable due to the
+    # potential multiple services indicated by each ThreatHIGH.
+    if("x" %in% SiteThreatHIGHsMapped[,10+y]) {ThreatHIGHByService[x,y]<-SumThreatHIGHs[x]} else {ThreatHIGHByService[x,y]<-0}
+  }
+}
+
+# Rearrange the "wide" matrix into a "long" data frame for use in the treemap() function
+LongThreatHIGHByService<-matrix(nrow=ncol(ThreatHIGHByService)*nrow(ThreatHIGHByService),ncol=3)
+ThreatHIGHFreq<-as.vector(ThreatHIGHByService)
+LongThreatHIGH<-rep(rownames(ThreatHIGHByService),19)
+LongServiceHIGH<-rep(colnames(ThreatHIGHByService),each=nrow(ThreatHIGHByService))
+
+# Modify the dataframe so that the formats are correct for treemap()
+LongThreatHIGHByService<-as.data.frame(cbind(LongServiceHIGH,LongThreatHIGH,ThreatHIGHFreq=as.vector(as.numeric(ThreatHIGHFreq))))
+LongThreatHIGHByService<-transform(LongThreatHIGHByService, ThreatHIGHFreq = as.numeric(ThreatHIGHFreq))
+LongThreatHIGHByService<-LongThreatHIGHByService[which(LongThreatHIGHByService$ThreatHIGHFreq>1),]
+
+LongThreatHIGHByService$INTENSITY<-c("HIGH")
+colnames(LongThreatHIGHByService)<-c("LongService", "LongThreat", "ThreatFreq", "INTENSITY")
+
+
+# Calculate the number of services across the site network
+SumThreatMEDIUMs<-as.matrix(table(N2000Impact4_MEDIUM$ThreatWithService))
+
+# Using the mapping data, we can create a matrix that converts the number of
+# each ThreatMEDIUM into the number of each service provided
+ThreatMEDIUMByService<-matrix(ncol=19,nrow=nrow(SumThreatMEDIUMs))
+colnames(ThreatMEDIUMByService)<-ServiceGroups
+rownames(ThreatMEDIUMByService)<-rownames(SumThreatMEDIUMs)
+# For each of the ThreatMEDIUMs, we specify the number of times that that ThreatMEDIUM indicates
+# a service, using a matrix
+for(x in 1:nrow(ThreatMEDIUMByService)){
+  # Extract the rows from the mapping table that contain the services associated with those ThreatMEDIUMs
+  SiteThreatMEDIUMsMapped<-subset(MappingData,MappingData$relation %in% rownames(SumThreatMEDIUMs)[x])
+  # For each service group, check whether the site had a ThreatMEDIUM that indicates that service is present
+  for(y in 1:ncol(ThreatMEDIUMByService)){
+    # The cells in the matrix correspond to the frequency with which each ThreatMEDIUM leads to each
+    # service. Note that this will mean "double counting", but that is unavoidable due to the
+    # potential multiple services indicated by each ThreatMEDIUM.
+    if("x" %in% SiteThreatMEDIUMsMapped[,10+y]) {ThreatMEDIUMByService[x,y]<-SumThreatMEDIUMs[x]} else {ThreatMEDIUMByService[x,y]<-0}
+  }
+}
+
+# Rearrange the "wide" matrix into a "long" data frame for use in the treemap() function
+LongThreatMEDIUMByService<-matrix(nrow=ncol(ThreatMEDIUMByService)*nrow(ThreatMEDIUMByService),ncol=3)
+ThreatMEDIUMFreq<-as.vector(ThreatMEDIUMByService)
+LongThreatMEDIUM<-rep(rownames(ThreatMEDIUMByService),19)
+LongServiceMEDIUM<-rep(colnames(ThreatMEDIUMByService),each=nrow(ThreatMEDIUMByService))
+
+# Modify the dataframe so that the formats are correct for treemap()
+LongThreatMEDIUMByService<-as.data.frame(cbind(LongServiceMEDIUM,LongThreatMEDIUM,ThreatMEDIUMFreq=as.vector(as.numeric(ThreatMEDIUMFreq))))
+LongThreatMEDIUMByService<-transform(LongThreatMEDIUMByService, ThreatMEDIUMFreq = as.numeric(ThreatMEDIUMFreq))
+LongThreatMEDIUMByService<-LongThreatMEDIUMByService[which(LongThreatMEDIUMByService$ThreatMEDIUMFreq>1),]
+
+LongThreatMEDIUMByService$INTENSITY<-c("MEDIUM")
+colnames(LongThreatMEDIUMByService)<-c("LongService", "LongThreat", "ThreatFreq", "INTENSITY")
+
+# Calculate the number of services across the site network
+SumThreatLOWs<-as.matrix(table(N2000Impact4_LOW$ThreatWithService))
+
+# Using the mapping data, we can create a matrix that converts the number of
+# each ThreatLOW into the number of each service provided
+ThreatLOWByService<-matrix(ncol=19,nrow=nrow(SumThreatLOWs))
+colnames(ThreatLOWByService)<-ServiceGroups
+rownames(ThreatLOWByService)<-rownames(SumThreatLOWs)
+# For each of the ThreatLOWs, we specify the number of times that that ThreatLOW indicates
+# a service, using a matrix
+for(x in 1:nrow(ThreatLOWByService)){
+  # Extract the rows from the mapping table that contain the services associated with those ThreatLOWs
+  SiteThreatLOWsMapped<-subset(MappingData,MappingData$relation %in% rownames(SumThreatLOWs)[x])
+  # For each service group, check whether the site had a ThreatLOW that indicates that service is present
+  for(y in 1:ncol(ThreatLOWByService)){
+    # The cells in the matrix correspond to the frequency with which each ThreatLOW leads to each
+    # service. Note that this will mean "double counting", but that is unavoidable due to the
+    # potential multiple services indicated by each ThreatLOW.
+    if("x" %in% SiteThreatLOWsMapped[,10+y]) {ThreatLOWByService[x,y]<-SumThreatLOWs[x]} else {ThreatLOWByService[x,y]<-0}
+  }
+}
+
+
+# Rearrange the "wide" matrix into a "long" data frame for use in the treemap() function
+LongThreatLOWByService<-matrix(nrow=ncol(ThreatLOWByService)*nrow(ThreatLOWByService),ncol=3)
+ThreatLOWFreq<-as.vector(ThreatLOWByService)
+LongThreatLOW<-rep(rownames(ThreatLOWByService),19)
+LongServiceLOW<-rep(colnames(ThreatLOWByService),each=nrow(ThreatLOWByService))
+
+# Modify the dataframe so that the formats are correct for treemap()
+LongThreatLOWByService<-as.data.frame(cbind(LongServiceLOW,LongThreatLOW,ThreatLOWFreq=as.vector(as.numeric(ThreatLOWFreq))))
+LongThreatLOWByService<-transform(LongThreatLOWByService, ThreatLOWFreq = as.numeric(ThreatLOWFreq))
+LongThreatLOWByService<-LongThreatLOWByService[which(LongThreatLOWByService$ThreatLOWFreq>1),]
+
+LongThreatLOWByService$INTENSITY<-c("LOW")
+colnames(LongThreatLOWByService)<-c("LongService", "LongThreat", "ThreatFreq", "INTENSITY")
+
+
+LongThreatByServiceINTENSITY<-rbind(LongThreatHIGHByService,LongThreatMEDIUMByService,LongThreatLOWByService)
+
+png(file = path2temp %+% "ThreatByServiceINTENSITY_negative.png")
+treemap(LongThreatByServiceINTENSITY,c("LongService","INTENSITY"),vSize="ThreatFreq")
+dev.off()
+
+barplot(LongThreatByServiceINTENSITY,c("LongService","INTENSITY"),vSize="ThreatFreq")
