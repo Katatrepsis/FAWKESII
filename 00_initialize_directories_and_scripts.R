@@ -47,7 +47,11 @@
         path2wd <- "C:/Users/cord/Documents/FAWKESII/" #AC
         path2temp <- "C:/Daten/Konferenzen_Workshops/2016/FAWKES_2/tmp_git/" #AC
 
-  }  
+    } else if (cn == "CLE175L"){
+  path2wd <- "C:/Users/kaim/Andrea/Git/FAWKESII/" #AK
+  path2temp <- "C:/Users/kaim/Andrea/tmp" #AK
+  
+  } 
   return(list(path2temp,path2wd))
 }
 
