@@ -1,5 +1,384 @@
 ############################################################################
 ### Purpose of this skript module 04 is to:
+###
+### Create barplots of proportions of impacts in SPA and SCI sites on
+### ecosystem services
+### 
+### 04.1. N2000Impact data frame
+### 04.2 Associations of services
+### 04.3 Add services to N2000Impact3 data frame
+### 04.4 Add site type to N2000Impact3 data frame
+### 04.5 Bar plots
+### 04.6 Code cemetery
+###
+### Authors: CH, AC, MB, AK
+###
+### Run skript modules 00, 01 and 02 before
+############################################################################
+
+############################################################################
+### To do:
+### 
+###  [AK] remove duplicate lines from N2000Impact
+###  [AK] check MappingData[134,"Plant.based.energy.resources"] in original
+###       MappingData data frame (I defined it NA in 04.2)
+### 
+###
+### 
+############################################################################
+
+############################################################################
+### 04.1 N2000Impact data frame
+###
+### Create N2000Impact data frame as a base for further data analysis
+############################################################################
+
+# set wd to path2temp where files have been downloaded and extracted
+setwd(path2temp %+% "/") 
+
+# Load data
+N2000Impact<-read.csv("IMPACT.csv")
+
+
+#### DATA CLEANING ####
+
+# Change column name from "ï..SITECODE" to "SITECODE"
+colnames(N2000Impact)[1] <- "SITECODE"
+
+# Convert lower case to upper case
+N2000Impact$IMPACTCODE<-gsub("j", "J", N2000Impact$IMPACTCODE)
+N2000Impact$IMPACTCODE<-gsub("k", "K", N2000Impact$IMPACTCODE)
+
+# Convert letter "O" to number "0"
+N2000Impact$IMPACTCODE<-gsub("O", "0", N2000Impact$IMPACTCODE)
+
+# Replace comma with period
+N2000Impact$IMPACTCODE<-gsub(",", ".", N2000Impact$IMPACTCODE)
+
+# Remove spaces
+N2000Impact$IMPACTCODE<-gsub(" ", "", N2000Impact$IMPACTCODE)
+
+# Some impact codes had a period as the final character, which is also invalid
+for(x in 1:nrow(N2000Impact)){
+  if(substr(N2000Impact$IMPACTCODE[x],nchar(N2000Impact$IMPACTCODE[x]),nchar(N2000Impact$IMPACTCODE[x]))==".")
+  {N2000Impact$IMPACTCODE[x]<-substr(N2000Impact$IMPACTCODE[x],1,nchar(N2000Impact$IMPACTCODE[x])-1)}
+}
+
+# Remove codes that do not exist in definitions, i.e. beginning with 0, 6, 8, O and P (n=102)
+FirstChar<-substr(N2000Impact$IMPACTCODE,1,1)
+N2000Impact<-subset(N2000Impact,is.na(match(FirstChar,c("0","6", "8", "O","P"))))
+
+# Remove NULL impact codes (n=5494)
+N2000Impact<-subset(N2000Impact,N2000Impact$IMPACTCODE!="NULL")
+
+# And some very specific mistakes
+N2000Impact<-subset(N2000Impact,N2000Impact$IMPACTCODE!="D014.01") # Not possible to establish whether D01.01 or D04.01, so delete
+N2000Impact$IMPACTCODE[which(N2000Impact$IMPACTCODE=="D2.01")]<-"D02.01" 
+N2000Impact$IMPACTCODE[which(N2000Impact$IMPACTCODE=="F.03.01.01")]<-"F03.01.01" 
+N2000Impact$IMPACTCODE[which(N2000Impact$IMPACTCODE=="K.02.01")]<-"K02.01" 
+N2000Impact$IMPACTCODE[which(N2000Impact$IMPACTCODE=="G.01.04.03")]<-"G01.04.03" 
+N2000Impact$IMPACTCODE[which(N2000Impact$IMPACTCODE=="F3.01.01")]<-"F03.01.01" 
+N2000Impact$IMPACTCODE[which(N2000Impact$IMPACTCODE=="C3.03")]<-"C03.03"
+
+# Remove duplicate lines (still needs to be coded, e.g. lines with sitecode AT1101112)
+# check duplicated()
+
+
+############################################################################
+### 04.2 Associations of services
+###
+### Create the column ThreatWithServices in the N2000Impact data frame
+### which converts threats to harmonised threats that all have services
+### associated (the "relation" column) in the Google Sheet.
+### Aim: Get rid of threats we do not consider
+############################################################################
+
+
+ThreatWithService<-character(length=nrow(N2000Impact))
+# if N2000Impact$IMPACTCODE[x] matches MappingData$ACT_Code in line y, then define ThreatWithService[x] as MappingData$relation[y]
+for (x in 1:nrow(N2000Impact)){
+  if(!is.na(match(N2000Impact$IMPACTCODE[x],MappingData$ACT_Code))) 
+  {ThreatWithService[x]<-as.character(MappingData$relation[which(MappingData$ACT_Code==N2000Impact$IMPACTCODE[x])])}
+  else {ThreatWithService[x]<-NA}
+}
+# Add that new harmonised threat to the N2000Impact table
+N2000Impact2<-cbind(N2000Impact,ThreatWithService)
+
+# Remove rows with NA from N2000Impact2 data frame
+N2000Impact2 <- na.omit(N2000Impact2)
+
+# Change data frame entry from "Review official documents..." to NA (only crosses "x" or "NA" accepted)
+MappingData[134,"Plant.based.energy.resources"] <- NA
+
+
+############################################################################
+### 04.3 Add services to N2000Impact3 data frame
+###
+### Match N2000Impact2$ThreatWithService (and not N2000Impact2$IMPACTCODE)
+### with MappingData$ACT_Code otherwise there will be some Impacts that are
+### not related to services
+############################################################################
+
+
+# Add service name to N2000Impact2 data frame
+# Running time: 213.87 sec
+
+#ptm <- proc.time()
+d <- as.data.frame(matrix(,nrow=nrow(N2000Impact2), ncol=4))
+colnames(d) <- c("SERVICE 1", "SERVICE 2", "SERVICE 3", "SERVICE 4")
+for(x in 1:nrow(N2000Impact2)){
+  i = 1
+  for(y in 11:29){
+    if(!is.na(MappingData[match(N2000Impact2$ThreatWithService[x],MappingData$ACT_Code),y])){
+      #      d[x,i] <- y
+      d[x,i] <- colnames(MappingData)[y]
+      i = i+1
+    }
+  }
+}
+#proc.time() - ptm
+#length(which(!is.na(c[,1]))) returns 99695, i.e. no NA rows
+
+# Add Services to N2000Impact2 data frame and create additional rows if there is more than one service related to
+# the threat, i.e. one row per service
+
+# Convert factors to characters in N2000Impact2
+for(i in 1:8){
+  N2000Impact2[,i] <- as.character(N2000Impact2[,i])
+}
+# test with str(N2000Impact2)
+
+# Create new data frame N2000Impact3 by adding services to N2000Impact2
+# Takes a long time to run (ca. 5hrs!)
+
+#ptm <- proc.time()
+N2000Impact3 <- as.data.frame(matrix(,ncol=9))
+colnames(N2000Impact3) <- c(colnames(N2000Impact2), "SERVICE")
+i = 1
+for(x in 1:nrow(d)){
+  for(y in 1:ncol(d)){
+    if(!is.na(d[x,y])){
+      N2000Impact3[i,1:8] <- N2000Impact2[x,]
+      N2000Impact3[i,9] <- d[x,y]
+      i = i+1
+    }
+  }
+}
+#proc.time() - ptm
+#write.csv(N2000Impact3, file = "N2000Impact3.csv")
+
+
+############################################################################
+### 04.4 Add site type to N2000Impact3 data frame
+###
+### A - SPA, B - SCI, C - both
+### Source: http://eur-lex.europa.eu/legal-content/EN/TXT/PDF/
+### ?uri=CELEX:32011D0484&from=EN, PDF page 15
+############################################################################
+
+
+# Load data
+N2000Sites <- read.csv("NATURA2000SITES.csv")
+N2000Sites[,4] <- as.character(N2000Sites[,4])
+N2000Impact3$SITE_TYPE <- NA
+
+# Add site type to N2000Impact3
+# Running time ca. 5 min
+#ptm2 <- proc.time()
+for(x in 1:nrow(N2000Impact3)){
+  N2000Impact3$SITE_TYPE[x] <- N2000Sites[match(N2000Impact3$SITECODE[x],N2000Sites$SITECODE),4]
+}
+#proc.time() - ptm2
+
+
+############################################################################
+### 04.5 Bar plots
+###
+### Creates bar plots of proportions of impacts in SPA and SCI sites on
+### ecosystem services
+############################################################################
+
+
+### SPA (Site type A+C) ###
+
+# Sub-data-frame: select all rows from N2000Impact3 that are SPA
+N2000Impact3_SPA <- subset(N2000Impact3,N2000Impact3$SITE_TYPE=="A"|N2000Impact3$SITE_TYPE=="C")
+# Sub-data-frame: select all rows from SPA that are positive (and low/medium/high)
+N2000Impact3_SPA_pos <- subset(N2000Impact3_SPA,N2000Impact3_SPA$IMPACT_TYPE=="P")
+N2000Impact3_SPA_pos_low <- subset(N2000Impact3_SPA,N2000Impact3_SPA$IMPACT_TYPE=="P"&N2000Impact3_SPA$INTENSITY=="LOW")
+N2000Impact3_SPA_pos_medium <- subset(N2000Impact3_SPA,N2000Impact3_SPA$IMPACT_TYPE=="P"&N2000Impact3_SPA$INTENSITY=="MEDIUM")
+N2000Impact3_SPA_pos_high <- subset(N2000Impact3_SPA,N2000Impact3_SPA$IMPACT_TYPE=="P"&N2000Impact3_SPA$INTENSITY=="HIGH")
+# Sub-data-frame: select all rows from SPA that are negative (and low/medium/high)
+N2000Impact3_SPA_neg <- subset(N2000Impact3_SPA,N2000Impact3_SPA$IMPACT_TYPE=="N")
+N2000Impact3_SPA_neg_low <- subset(N2000Impact3_SPA,N2000Impact3_SPA$IMPACT_TYPE=="N"&N2000Impact3_SPA$INTENSITY=="LOW")
+N2000Impact3_SPA_neg_medium <- subset(N2000Impact3_SPA,N2000Impact3_SPA$IMPACT_TYPE=="N"&N2000Impact3_SPA$INTENSITY=="MEDIUM")
+N2000Impact3_SPA_neg_high <- subset(N2000Impact3_SPA,N2000Impact3_SPA$IMPACT_TYPE=="N"&N2000Impact3_SPA$INTENSITY=="HIGH")
+# Sub-data-frame: select all rows from SPA that are positive (and in/out/both)
+N2000Impact3_SPA_pos_in <- subset(N2000Impact3_SPA,N2000Impact3_SPA$IMPACT_TYPE=="P"&N2000Impact3_SPA$OCCURRENCE=="IN")
+N2000Impact3_SPA_pos_out <- subset(N2000Impact3_SPA,N2000Impact3_SPA$IMPACT_TYPE=="P"&N2000Impact3_SPA$OCCURRENCE=="OUT")
+N2000Impact3_SPA_pos_both <- subset(N2000Impact3_SPA,N2000Impact3_SPA$IMPACT_TYPE=="P"&N2000Impact3_SPA$OCCURRENCE=="BOTH")
+# Sub-data-frame: select all rows from SPA that are negative (and in/out/both)
+N2000Impact3_SPA_neg_in <- subset(N2000Impact3_SPA,N2000Impact3_SPA$IMPACT_TYPE=="N"&N2000Impact3_SPA$OCCURRENCE=="IN")
+N2000Impact3_SPA_neg_out <- subset(N2000Impact3_SPA,N2000Impact3_SPA$IMPACT_TYPE=="N"&N2000Impact3_SPA$OCCURRENCE=="OUT")
+N2000Impact3_SPA_neg_both <- subset(N2000Impact3_SPA,N2000Impact3_SPA$IMPACT_TYPE=="N"&N2000Impact3_SPA$OCCURRENCE=="BOTH")
+
+# Positive and negative proportion
+POS_NEG <- as.data.frame(matrix(nrow=2, ncol=19))
+colnames(POS_NEG) <- colnames(MappingData)[11:29]
+rownames(POS_NEG) <- c("POS","NEG")
+
+for(x in 1:ncol(POS_NEG)){
+  POS_NEG[1,x] <- length(which(N2000Impact3_SPA_pos$SERVICE==colnames(POS_NEG)[x]))
+  POS_NEG[2,x] <- length(which(N2000Impact3_SPA_neg$SERVICE==colnames(POS_NEG)[x]))
+}
+par(oma=c(1,25,1,1))
+barplot(as.matrix(POS_NEG), horiz=TRUE, las=2, legend=T, main="SPA - POS_NEG")
+
+# Low, medium, high - positive
+LMH_POS <- as.data.frame(matrix(nrow=3, ncol=19))
+colnames(LMH_POS) <- colnames(MappingData)[11:29]
+rownames(LMH_POS) <- c("LOW","MED", "HIGH")
+
+for(x in 1:ncol(LMH_POS)){
+  LMH_POS[1,x] <- length(which(N2000Impact3_SPA_pos_low$SERVICE==colnames(LMH_POS)[x]))
+  LMH_POS[2,x] <- length(which(N2000Impact3_SPA_pos_medium$SERVICE==colnames(LMH_POS)[x]))
+  LMH_POS[3,x] <- length(which(N2000Impact3_SPA_pos_high$SERVICE==colnames(LMH_POS)[x]))
+}
+barplot(as.matrix(LMH_POS), horiz=TRUE, las=2, legend=T, main="SPA - POS_LMH")
+
+# Low, medium, high - negative
+LMH_NEG <- as.data.frame(matrix(nrow=3, ncol=19))
+colnames(LMH_NEG) <- colnames(MappingData)[11:29]
+rownames(LMH_NEG) <- c("LOW","MED", "HIGH")
+
+for(x in 1:ncol(LMH_NEG)){
+  LMH_NEG[1,x] <- length(which(N2000Impact3_SPA_neg_low$SERVICE==colnames(LMH_NEG)[x]))
+  LMH_NEG[2,x] <- length(which(N2000Impact3_SPA_neg_medium$SERVICE==colnames(LMH_NEG)[x]))
+  LMH_NEG[3,x] <- length(which(N2000Impact3_SPA_neg_high$SERVICE==colnames(LMH_NEG)[x]))
+}
+barplot(as.matrix(LMH_NEG), horiz=TRUE, las=2, legend=T, main="SPA - NEG_LMH")
+
+# Inside, outside, both - positive
+IOB_POS <- as.data.frame(matrix(nrow=3, ncol=19))
+colnames(IOB_POS) <- colnames(MappingData)[11:29]
+rownames(IOB_POS) <- c("IN","OUT", "BOTH")
+
+for(x in 1:ncol(IOB_POS)){
+  IOB_POS[1,x] <- length(which(N2000Impact3_SPA_pos_in$SERVICE==colnames(IOB_POS)[x]))
+  IOB_POS[2,x] <- length(which(N2000Impact3_SPA_pos_out$SERVICE==colnames(IOB_POS)[x]))
+  IOB_POS[3,x] <- length(which(N2000Impact3_SPA_pos_both$SERVICE==colnames(IOB_POS)[x]))
+}
+barplot(as.matrix(IOB_POS), horiz=TRUE, las=2, legend=T, main="SPA - POS_IOB")
+
+# Inside, outside, both - negative
+IOB_NEG <- as.data.frame(matrix(nrow=3, ncol=19))
+colnames(IOB_NEG) <- colnames(MappingData)[11:29]
+rownames(IOB_NEG) <- c("IN","OUT", "BOTH")
+
+for(x in 1:ncol(IOB_NEG)){
+  IOB_NEG[1,x] <- length(which(N2000Impact3_SPA_neg_in$SERVICE==colnames(IOB_NEG)[x]))
+  IOB_NEG[2,x] <- length(which(N2000Impact3_SPA_neg_out$SERVICE==colnames(IOB_NEG)[x]))
+  IOB_NEG[3,x] <- length(which(N2000Impact3_SPA_neg_both$SERVICE==colnames(IOB_NEG)[x]))
+}
+barplot(as.matrix(IOB_NEG), horiz=TRUE, las=2, legend=T, main="SPA - NEG_IOB")
+
+
+### SCI (Site type B+C) ###
+
+# Sub-data-frame: select all rows from N2000Impact3 that are SCI
+N2000Impact3_SCI <- subset(N2000Impact3,N2000Impact3$SITE_TYPE=="B"|N2000Impact3$SITE_TYPE=="C")
+# Sub-data-frame: select all rows from SCI that are positive (and low/medium/high)
+N2000Impact3_SCI_pos <- subset(N2000Impact3_SCI,N2000Impact3_SCI$IMPACT_TYPE=="P")
+N2000Impact3_SCI_pos_low <- subset(N2000Impact3_SCI,N2000Impact3_SCI$IMPACT_TYPE=="P"&N2000Impact3_SCI$INTENSITY=="LOW")
+N2000Impact3_SCI_pos_medium <- subset(N2000Impact3_SCI,N2000Impact3_SCI$IMPACT_TYPE=="P"&N2000Impact3_SCI$INTENSITY=="MEDIUM")
+N2000Impact3_SCI_pos_high <- subset(N2000Impact3_SCI,N2000Impact3_SCI$IMPACT_TYPE=="P"&N2000Impact3_SCI$INTENSITY=="HIGH")
+# Sub-data-frame: select all rows from SCI that are negative (and low/medium/high)
+N2000Impact3_SCI_neg <- subset(N2000Impact3_SCI,N2000Impact3_SCI$IMPACT_TYPE=="N")
+N2000Impact3_SCI_neg_low <- subset(N2000Impact3_SCI,N2000Impact3_SCI$IMPACT_TYPE=="N"&N2000Impact3_SCI$INTENSITY=="LOW")
+N2000Impact3_SCI_neg_medium <- subset(N2000Impact3_SCI,N2000Impact3_SCI$IMPACT_TYPE=="N"&N2000Impact3_SCI$INTENSITY=="MEDIUM")
+N2000Impact3_SCI_neg_high <- subset(N2000Impact3_SCI,N2000Impact3_SCI$IMPACT_TYPE=="N"&N2000Impact3_SCI$INTENSITY=="HIGH")
+# Sub-data-frame: select all rows from SCI that are positive (and in/out/both)
+N2000Impact3_SCI_pos_in <- subset(N2000Impact3_SCI,N2000Impact3_SCI$IMPACT_TYPE=="P"&N2000Impact3_SCI$OCCURRENCE=="IN")
+N2000Impact3_SCI_pos_out <- subset(N2000Impact3_SCI,N2000Impact3_SCI$IMPACT_TYPE=="P"&N2000Impact3_SCI$OCCURRENCE=="OUT")
+N2000Impact3_SCI_pos_both <- subset(N2000Impact3_SCI,N2000Impact3_SCI$IMPACT_TYPE=="P"&N2000Impact3_SCI$OCCURRENCE=="BOTH")
+# Sub-data-frame: select all rows from SCI that are negative (and in/out/both)
+N2000Impact3_SCI_neg_in <- subset(N2000Impact3_SCI,N2000Impact3_SCI$IMPACT_TYPE=="N"&N2000Impact3_SCI$OCCURRENCE=="IN")
+N2000Impact3_SCI_neg_out <- subset(N2000Impact3_SCI,N2000Impact3_SCI$IMPACT_TYPE=="N"&N2000Impact3_SCI$OCCURRENCE=="OUT")
+N2000Impact3_SCI_neg_both <- subset(N2000Impact3_SCI,N2000Impact3_SCI$IMPACT_TYPE=="N"&N2000Impact3_SCI$OCCURRENCE=="BOTH")
+
+# Positive and negative proportion
+POS_NEG <- as.data.frame(matrix(nrow=2, ncol=19))
+colnames(POS_NEG) <- colnames(MappingData)[11:29]
+rownames(POS_NEG) <- c("POS","NEG")
+
+for(x in 1:ncol(POS_NEG)){
+  POS_NEG[1,x] <- length(which(N2000Impact3_SCI_pos$SERVICE==colnames(POS_NEG)[x]))
+  POS_NEG[2,x] <- length(which(N2000Impact3_SCI_neg$SERVICE==colnames(POS_NEG)[x]))
+}
+barplot(as.matrix(POS_NEG), horiz=TRUE, las=2, legend=T, main="SCI - POS_NEG")
+
+# Low, medium, high - positive
+LMH_POS <- as.data.frame(matrix(nrow=3, ncol=19))
+colnames(LMH_POS) <- colnames(MappingData)[11:29]
+rownames(LMH_POS) <- c("LOW","MED", "HIGH")
+
+for(x in 1:ncol(LMH_POS)){
+  LMH_POS[1,x] <- length(which(N2000Impact3_SCI_pos_low$SERVICE==colnames(LMH_POS)[x]))
+  LMH_POS[2,x] <- length(which(N2000Impact3_SCI_pos_medium$SERVICE==colnames(LMH_POS)[x]))
+  LMH_POS[3,x] <- length(which(N2000Impact3_SCI_pos_high$SERVICE==colnames(LMH_POS)[x]))
+}
+barplot(as.matrix(LMH_POS), horiz=TRUE, las=2, legend=T, main="SCI - POS_LMH")
+
+# Low, medium, high - negative
+LMH_NEG <- as.data.frame(matrix(nrow=3, ncol=19))
+colnames(LMH_NEG) <- colnames(MappingData)[11:29]
+rownames(LMH_NEG) <- c("LOW","MED", "HIGH")
+
+for(x in 1:ncol(LMH_NEG)){
+  LMH_NEG[1,x] <- length(which(N2000Impact3_SCI_neg_low$SERVICE==colnames(LMH_NEG)[x]))
+  LMH_NEG[2,x] <- length(which(N2000Impact3_SCI_neg_medium$SERVICE==colnames(LMH_NEG)[x]))
+  LMH_NEG[3,x] <- length(which(N2000Impact3_SCI_neg_high$SERVICE==colnames(LMH_NEG)[x]))
+}
+barplot(as.matrix(LMH_NEG), horiz=TRUE, las=2, legend=T, main="SCI - NEG_LMH")
+
+# Inside, outside, both - positive
+IOB_POS <- as.data.frame(matrix(nrow=3, ncol=19))
+colnames(IOB_POS) <- colnames(MappingData)[11:29]
+rownames(IOB_POS) <- c("IN","OUT", "BOTH")
+
+for(x in 1:ncol(IOB_POS)){
+  IOB_POS[1,x] <- length(which(N2000Impact3_SCI_pos_in$SERVICE==colnames(IOB_POS)[x]))
+  IOB_POS[2,x] <- length(which(N2000Impact3_SCI_pos_out$SERVICE==colnames(IOB_POS)[x]))
+  IOB_POS[3,x] <- length(which(N2000Impact3_SCI_pos_both$SERVICE==colnames(IOB_POS)[x]))
+}
+barplot(as.matrix(IOB_POS), horiz=TRUE, las=2, legend=T, main="SCI - POS_IOB")
+
+# Inside, outside, both - negative
+IOB_NEG <- as.data.frame(matrix(nrow=3, ncol=19))
+colnames(IOB_NEG) <- colnames(MappingData)[11:29]
+rownames(IOB_NEG) <- c("IN","OUT", "BOTH")
+
+for(x in 1:ncol(IOB_NEG)){
+  IOB_NEG[1,x] <- length(which(N2000Impact3_SCI_neg_in$SERVICE==colnames(IOB_NEG)[x]))
+  IOB_NEG[2,x] <- length(which(N2000Impact3_SCI_neg_out$SERVICE==colnames(IOB_NEG)[x]))
+  IOB_NEG[3,x] <- length(which(N2000Impact3_SCI_neg_both$SERVICE==colnames(IOB_NEG)[x]))
+}
+barplot(as.matrix(IOB_NEG), horiz=TRUE, las=2, legend=T, main="SCI - NEG_IOB")
+
+
+############################################################################
+### 04.6 Code cemetery
+###
+### Below this line you can leave everything that might be of use at a later
+### point in time ;)
+############################################################################
+###                          ~~~~**RIP**~~~~
+############################################################################
+
+
+
+############################################################################
+### Purpose of this skript module 04 is to:
 ### 
 ### 04.1. Statistics on Natura2000 pressures
 ### 04.2. ...
@@ -21,6 +400,9 @@ N2000Impact<-read.csv("IMPACT.csv")
 head(N2000Impact)
 
 ## DATA CLEANING ####
+
+# Change column name from "ï..SITECODE" to "SITECODE"
+colnames(N2000Impact)[1] <- "SITECODE"
 
 # Convert lower case to upper case
 N2000Impact$IMPACTCODE<-gsub("j", "J", N2000Impact$IMPACTCODE)
@@ -66,10 +448,10 @@ Tier4Impact[nchar(Tier4Impact)!=9]<-NA
 N2000Impact<-cbind(N2000Impact,Tier1Impact,Tier2Impact,Tier3Impact,Tier4Impact)
 
 # Plot distributions of frequencies of impacts
-barplot(table(unique(N2000Impact[,c(1,8)])$Tier1Impact))
-barplot(table(unique(N2000Impact[,c(1,9)])$Tier2Impact))
-barplot(table(unique(N2000Impact[,c(1,10)])$Tier3Impact))
-barplot(table(unique(N2000Impact[,c(1,11)])$Tier4Impact))
+#barplot(table(unique(N2000Impact[,c(1,8)])$Tier1Impact))
+#barplot(table(unique(N2000Impact[,c(1,9)])$Tier2Impact))
+#barplot(table(unique(N2000Impact[,c(1,10)])$Tier3Impact))
+#barplot(table(unique(N2000Impact[,c(1,11)])$Tier4Impact))
 
 # 10 most common impacts
 # Download definitions of impact codes for simplicity
