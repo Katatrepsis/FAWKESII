@@ -4,12 +4,13 @@
 ### Create barplots of proportions of impacts in SPA and SCI sites on
 ### ecosystem services
 ### 
-### 04.1. N2000Impact data frame
+### 04.1 N2000Impact data frame
 ### 04.2 Associations of services
 ### 04.3 Add services to N2000Impact3 data frame
 ### 04.4 Add site type to N2000Impact3 data frame
 ### 04.5 Bar plots
-### 04.6 Code cemetery
+### 04.6 Network plots
+### 04.7 Code cemetery
 ###
 ### Authors: CH, AC, MB, AK
 ###
@@ -509,7 +510,80 @@ barplot(as.matrix(IOB_NEG), horiz=TRUE, las=2, legend=T, main="SCI - NEG_IOB")
 
 
 ############################################################################
-### 04.6 Code cemetery
+### 04.6 Networks showing associations between services
+### Useful tutorial here: http://kateto.net/network-visualization
+### relies on the function ES_Graph.r, which processes the
+### input data frame to produce an edge table and igraph() object
+############################################################################
+
+# Associations of services
+
+# Load helper script (to be copied into 01)
+source(path2wd %+% "ES_Graph.r")
+
+### SPA (Site type A) ###
+ptm <- proc.time()
+# Sub-data-frame: select all rows from N2000Impact3 that are SPA
+N2000Impact3_SPA_graph<-ES_Graph(N2000Impact3_SPA,GRAPH=FALSE)
+# Sub-data-frame: select all rows from SPA that are positive (and low/medium/high)
+N2000Impact3_SPA_pos_graph<-ES_Graph(N2000Impact3_SPA_pos,GRAPH=FALSE)
+N2000Impact3_SPA_pos_low_graph<-ES_Graph(N2000Impact3_SPA_pos_low,GRAPH=FALSE)
+N2000Impact3_SPA_pos_medium_graph<-ES_Graph(N2000Impact3_SPA_pos_medium,GRAPH=FALSE)
+N2000Impact3_SPA_pos_high_graph<-ES_Graph(N2000Impact3_SPA_pos_high,GRAPH=FALSE)
+# Sub-data-frame: select all rows from SPA that are negative (and low/medium/high)
+N2000Impact3_SPA_neg_graph<-ES_Graph(N2000Impact3_SPA_neg,GRAPH=FALSE)
+N2000Impact3_SPA_neg_low_graph<-ES_Graph(N2000Impact3_SPA_neg_low,GRAPH=FALSE)
+N2000Impact3_SPA_neg_medium_graph<-ES_Graph(N2000Impact3_SPA_neg_medium,GRAPH=FALSE)
+N2000Impact3_SPA_neg_high_graph<-ES_Graph(N2000Impact3_SPA_neg_high,GRAPH=FALSE)
+# Sub-data-frame: select all rows from SPA that are positive (and in/out/both)
+N2000Impact3_SPA_pos_in_graph<-ES_Graph(N2000Impact3_SPA_pos_in,GRAPH=FALSE)
+N2000Impact3_SPA_pos_out_graph<-ES_Graph(N2000Impact3_SPA_pos_out,GRAPH=FALSE)
+N2000Impact3_SPA_pos_both_graph<-ES_Graph(N2000Impact3_SPA_pos_both,GRAPH=FALSE)
+# Sub-data-frame: select all rows from SPA that are negative (and in/out/both)
+N2000Impact3_SPA_neg_in_graph<-ES_Graph(N2000Impact3_SPA_neg_in,GRAPH=FALSE)
+N2000Impact3_SPA_neg_out_graph<-ES_Graph(N2000Impact3_SPA_neg_out,GRAPH=FALSE)
+N2000Impact3_SPA_neg_both_graph<-ES_Graph(N2000Impact3_SPA_neg_both,GRAPH=FALSE)
+
+proc.time() - ptm # 
+
+
+### SCI (Site type B+C) ###
+ptm <- proc.time()
+# Sub-data-frame: select all rows from N2000Impact3 that are SCI
+N2000Impact3_SCI_graph<-ES_Graph(N2000Impact3_SCI,GRAPH=FALSE)
+# Sub-data-frame: select all rows from SCI that are positive (and low/medium/high)
+N2000Impact3_SCI_pos_graph<-ES_Graph(N2000Impact3_SCI_pos,GRAPH=FALSE
+N2000Impact3_SCI_pos_low_graph<-ES_Graph(N2000Impact3_SCI_pos_low,GRAPH=FALSE)
+N2000Impact3_SCI_pos_medium_graph<-ES_Graph(N2000Impact3_SCI_pos_medium,GRAPH=FALSE)
+N2000Impact3_SCI_pos_high_graph<-ES_Graph(N2000Impact3_SCI_pos_high,GRAPH=FALSE)
+# Sub-data-frame: select all rows from SCI that are negative (and low/medium/high)
+N2000Impact3_SCI_neg_graph<-ES_Graph(N2000Impact3_SCI_neg,GRAPH=FALSE)
+N2000Impact3_SCI_neg_low_graph<-ES_Graph(N2000Impact3_SCI_neg_low,GRAPH=FALSE)
+N2000Impact3_SCI_neg_medium_graph<-ES_Graph(N2000Impact3_SCI_neg_medium,GRAPH=FALSE)
+N2000Impact3_SCI_neg_high_graph<-ES_Graph(N2000Impact3_SCI_neg_high,GRAPH=FALSE)
+# Sub-data-frame: select all rows from SCI that are positive (and in/out/both)
+N2000Impact3_SCI_pos_in_graph<-ES_Graph(N2000Impact3_SCI_pos_in,GRAPH=FALSE)
+N2000Impact3_SCI_pos_out_graph<-ES_Graph(N2000Impact3_SCI_pos_out,GRAPH=FALSE)
+N2000Impact3_SCI_pos_both_graph<-ES_Graph(N2000Impact3_SCI_pos_both,GRAPH=FALSE)
+# Sub-data-frame: select all rows from SCI that are negative (and in/out/both)
+N2000Impact3_SCI_neg_in_graph<-ES_Graph(N2000Impact3_SCI_neg_in,GRAPH=FALSE)
+N2000Impact3_SCI_neg_out_graph<-ES_Graph(N2000Impact3_SCI_neg_out,GRAPH=FALSE)
+N2000Impact3_SCI_neg_both_graph<-ES_Graph(N2000Impact3_SCI_neg_both,GRAPH=FALSE)
+
+proc.time() - ptm
+
+par(mfrow=c(2,2),mar=c(1,1,1,1))
+plot(N2000Impact3_SPA_pos_in_graph[[1]],layout=layout_in_circle)
+plot(N2000Impact3_SPA_pos_out_graph[[1]],layout=layout_in_circle)
+plot(N2000Impact3_SPA_pos_both_graph[[1]],layout=layout_in_circle)
+
+
+
+
+
+
+############################################################################
+### 04.7 Code cemetery
 ###
 ### Below this line you can leave everything that might be of use at a later
 ### point in time ;)
