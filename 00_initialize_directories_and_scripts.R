@@ -36,8 +36,8 @@
   
   if (cu == "fbscha") ## example, please adjust
   {
-    path2temp <- "H:/Document Files/Research/FAWKES II/Temp/" 
-    path2wd <- "H:/Document Files/Research/FAWKES II/git/" 
+    path2temp <- "H:/Document Files/Research/FAWKES II/Temp/" #CH
+    path2wd <- "H:/Document Files/Research/FAWKES II/git/" #CH
 
       } else if (cn == "juro-MacBookPro"){
     path2wd <- "/home/juro/git/FAWKESII/" #MB
