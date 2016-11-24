@@ -80,8 +80,8 @@ N2000Impact$IMPACTCODE[which(N2000Impact$IMPACTCODE=="G.01.04.03")]<-"G01.04.03"
 N2000Impact$IMPACTCODE[which(N2000Impact$IMPACTCODE=="F3.01.01")]<-"F03.01.01" 
 N2000Impact$IMPACTCODE[which(N2000Impact$IMPACTCODE=="C3.03")]<-"C03.03"
 
-# Remove duplicate lines (still needs to be coded, e.g. lines with sitecode AT1101112)
-# check duplicated()
+# Remove duplicate lines
+N2000Impact<-N2000Impact[!duplicated(N2000Impact),]
 
 
 ############################################################################
@@ -148,23 +148,165 @@ for(i in 1:8){
 }
 # test with str(N2000Impact2)
 
-# Create new data frame N2000Impact3 by adding services to N2000Impact2
-# Takes a long time to run (ca. 5hrs!)
+# Create new data frame N2000Impact3 by adding services to N2000Impact2. The original code took
+# ca. 5 hrs to run due to geometrically-increasing computation times associated with elongating
+# the dataframe. It has now been broken up into 10 separate loops and runs in ca. 7 minutes :-)
+# Create vector of increments
+from_d<-seq(1,nrow(d),by=round(nrow(d)/10))[-c(11)]
+to_d<-seq(0,nrow(d),by=round(nrow(d)/10))[-1]
+to_d[10]<-nrow(d)
 
-#ptm <- proc.time()
-N2000Impact3 <- as.data.frame(matrix(,ncol=9))
-colnames(N2000Impact3) <- c(colnames(N2000Impact2), "SERVICE")
+# Time the full loop
+ptm_full <- proc.time()
+
+#  1/10 of the loop -> "N2000Impact3a"
+N2000Impact3a <- as.data.frame(matrix(,ncol=9))
+colnames(N2000Impact3a) <- c(colnames(N2000Impact2), "SERVICE")
 i = 1
-for(x in 1:nrow(d)){
+for(x in from_d[1]:to_d[1]){
   for(y in 1:ncol(d)){
     if(!is.na(d[x,y])){
-      N2000Impact3[i,1:8] <- N2000Impact2[x,]
-      N2000Impact3[i,9] <- d[x,y]
+      N2000Impact3a[i,1:8] <- N2000Impact2[x,]
+      N2000Impact3a[i,9] <- d[x,y]
       i = i+1
     }
   }
 }
-#proc.time() - ptm
+
+#  2/10 of the loop -> "N2000Impact3b"
+N2000Impact3b <- as.data.frame(matrix(,ncol=9))
+colnames(N2000Impact3b) <- c(colnames(N2000Impact2), "SERVICE")
+i = 1
+for(x in from_d[2]:to_d[2]){
+  for(y in 1:ncol(d)){
+    if(!is.na(d[x,y])){
+      N2000Impact3b[i,1:8] <- N2000Impact2[x,]
+      N2000Impact3b[i,9] <- d[x,y]
+      i = i+1
+    }
+  }
+}
+
+#  3/10 of the loop -> "N2000Impact3c"
+N2000Impact3c <- as.data.frame(matrix(,ncol=9))
+colnames(N2000Impact3c) <- c(colnames(N2000Impact2), "SERVICE")
+i = 1
+for(x in from_d[3]:to_d[3]){
+  for(y in 1:ncol(d)){
+    if(!is.na(d[x,y])){
+      N2000Impact3c[i,1:8] <- N2000Impact2[x,]
+      N2000Impact3c[i,9] <- d[x,y]
+      i = i+1
+    }
+  }
+}
+
+#  4/10 of the loop -> "N2000Impact3d"
+N2000Impact3d <- as.data.frame(matrix(,ncol=9))
+colnames(N2000Impact3d) <- c(colnames(N2000Impact2), "SERVICE")
+i = 1
+for(x in from_d[4]:to_d[4]){
+  for(y in 1:ncol(d)){
+    if(!is.na(d[x,y])){
+      N2000Impact3d[i,1:8] <- N2000Impact2[x,]
+      N2000Impact3d[i,9] <- d[x,y]
+      i = i+1
+    }
+  }
+}
+
+# 5/10 of the loop -> "N2000Impact3e"
+N2000Impact3e <- as.data.frame(matrix(,ncol=9))
+colnames(N2000Impact3e) <- c(colnames(N2000Impact2), "SERVICE")
+i = 1
+for(x in from_d[5]:to_d[5]){
+  for(y in 1:ncol(d)){
+    if(!is.na(d[x,y])){
+      N2000Impact3e[i,1:8] <- N2000Impact2[x,]
+      N2000Impact3e[i,9] <- d[x,y]
+      i = i+1
+    }
+  }
+}
+
+# 6/10 of the loop -> "N2000Impact3f"
+N2000Impact3f <- as.data.frame(matrix(,ncol=9))
+colnames(N2000Impact3f) <- c(colnames(N2000Impact2), "SERVICE")
+i = 1
+for(x in from_d[6]:to_d[6]){
+  for(y in 1:ncol(d)){
+    if(!is.na(d[x,y])){
+      N2000Impact3f[i,1:8] <- N2000Impact2[x,]
+      N2000Impact3f[i,9] <- d[x,y]
+      i = i+1
+    }
+  }
+}
+
+# 7/10 of the loop -> "N2000Impact3g"
+N2000Impact3g <- as.data.frame(matrix(,ncol=9))
+colnames(N2000Impact3g) <- c(colnames(N2000Impact2), "SERVICE")
+i = 1
+for(x in from_d[7]:to_d[7]){
+  for(y in 1:ncol(d)){
+    if(!is.na(d[x,y])){
+      N2000Impact3g[i,1:8] <- N2000Impact2[x,]
+      N2000Impact3g[i,9] <- d[x,y]
+      i = i+1
+    }
+  }
+}
+
+# 8/10 of the loop -> "N2000Impact3h"
+N2000Impact3h <- as.data.frame(matrix(,ncol=9))
+colnames(N2000Impact3h) <- c(colnames(N2000Impact2), "SERVICE")
+i = 1
+for(x in from_d[8]:to_d[8]){
+  for(y in 1:ncol(d)){
+    if(!is.na(d[x,y])){
+      N2000Impact3h[i,1:8] <- N2000Impact2[x,]
+      N2000Impact3h[i,9] <- d[x,y]
+      i = i+1
+    }
+  }
+}
+
+# 9/10 of the loop -> "N2000Impact3i"
+N2000Impact3i <- as.data.frame(matrix(,ncol=9))
+colnames(N2000Impact3i) <- c(colnames(N2000Impact2), "SERVICE")
+i = 1
+for(x in from_d[9]:to_d[9]){
+  for(y in 1:ncol(d)){
+    if(!is.na(d[x,y])){
+      N2000Impact3i[i,1:8] <- N2000Impact2[x,]
+      N2000Impact3i[i,9] <- d[x,y]
+      i = i+1
+    }
+  }
+}
+
+# 10/10 of the loop -> "N2000Impact3j"
+N2000Impact3j <- as.data.frame(matrix(,ncol=9))
+colnames(N2000Impact3j) <- c(colnames(N2000Impact2), "SERVICE")
+i = 1
+for(x in from_d[10]:to_d[10]){
+  for(y in 1:ncol(d)){
+    if(!is.na(d[x,y])){
+      N2000Impact3j[i,1:8] <- N2000Impact2[x,]
+      N2000Impact3j[i,9] <- d[x,y]
+      i = i+1
+    }
+  }
+}
+
+proc.time() - ptm_full
+
+
+
+# Bind the four quarters together
+N2000Impact3<-rbind(N2000Impact3a,N2000Impact3b,N2000Impact3c,N2000Impact3d,N2000Impact3e,N2000Impact3f,N2000Impact3g,N2000Impact3h,N2000Impact3i,N2000Impact3j)
+
+
 #write.csv(N2000Impact3, file = "N2000Impact3.csv")
 
 
