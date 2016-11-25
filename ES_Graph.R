@@ -15,11 +15,11 @@ CurrentNames<-c("Cultivated.crops","Wild.plants..algae.and.their.outputs","Mater
                 "Physical.use.of.land..seascapes.in.different.environmental.settings")
   
   
-  
-  
-  
+Coords<-layout.circle(make_ring(18))
+rownames(Coords)<-NewNames
+
+# Create a vector of simplified service groups 
 ServiceList<-unique(input$SERVICE)
-# Create a vector of simplified service groups
 
 ServiceBySite<-matrix(ncol=length(ServiceList),nrow=length(unique(input$SITECODE)))
 rownames(ServiceBySite)<-unique(input$SITECODE)
@@ -61,12 +61,14 @@ ServiceBySiteEdgeTable<-data.frame(Service1=NoDup[,1],Service2=NoDup[,2],Weight=
 ServiceBySiteEdgeTable$Service1<-NewNames[match(ServiceBySiteEdgeTable$Service1,CurrentNames)]
 ServiceBySiteEdgeTable$Service2<-NewNames[match(ServiceBySiteEdgeTable$Service2,CurrentNames)]
 
+
   ServiceBySiteEdgeTable2<-subset(ServiceBySiteEdgeTable,ServiceBySiteEdgeTable$Weight>(nrow(input)/100))
   graph <- graph.data.frame(ServiceBySiteEdgeTable2, directed = FALSE)
   E(graph)$width <- E(graph)$Weight/((max(E(graph)$Weight))/10) # Set edge width based on weight
   ServiceFreq2<-ServiceFreq[names(ServiceFreq)%in%names(V(graph))] # extract frequencies from subset of services
   V(graph)$size <- ServiceFreq2/(max(ServiceFreq2)/20) # Set node size based on frequency of service
-  if(GRAPH==TRUE) {plot(graph,layout=layout_in_circle)}
+  GraphCoords<-Coords[match(names(V(graph)),rownames(Coords)),]
+  if(GRAPH==TRUE) {plot(graph,layout=GraphCoords)}
 
-  return(list(graph, ServiceBySiteEdgeTable))
+  return(list(graph, ServiceBySiteEdgeTable,GraphCoords))
 }
