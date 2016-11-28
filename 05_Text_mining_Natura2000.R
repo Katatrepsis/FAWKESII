@@ -41,7 +41,7 @@ PDFPlans$Country<-substr(PDFPlans[,1],1,2)
 UKManPlans<-subset(PDFPlans,PDFPlans$Country=="UK")
 
 # Download PDFs from web into wd (currently just the first three)
-for(x in 1:5){download.file(UKManPlans$MANAG_PLAN_URL[x], paste(UKManPlans$SITECODE[x],".pdf",sep=""), mode="wb")}
+for(x in 1:116){download.file(UKManPlans$MANAG_PLAN_URL[x], paste(UKManPlans$SITECODE[x],".pdf",sep=""), mode="wb")}
 
 # Retrieve a list of PDFs from that folder
 files <- list.files(pattern = "pdf$")
@@ -51,7 +51,7 @@ files <- list.files(pattern = "pdf$")
 # of these can be seen below. Current code is restricted to three PDFs as an example
 # but can be extended to all 127
 Rpdf <- readPDF(control = list(text = "-layout"))
-natura <- Corpus(URISource(files[c(1:5)]), 
+natura <- Corpus(URISource(files[c(1:116)]), 
                    readerControl = list(reader = Rpdf))
 
 # The corpus object can then be "crunched" to find the frequency of words, after some
@@ -89,7 +89,7 @@ TDM.common = removeSparseTerms(natura.tdm, 0.8)
 inspect(TDM.common)
 
 # We can also find associations among words in the text
-findAssocs(natura.tdm, "threat", 0.8) # note "Himalayan" and "balsam" are both common
+findAssocs(natura.tdm, "water", 0.8) # note "Himalayan" and "balsam" are both common
 
 # Visualise the output using a matrix plot to compare texts
 TDM.dense <- as.matrix(natura.tdm[ft,])
