@@ -35,6 +35,7 @@ for(x in 1:nrow(ServiceBySite)){
 }
 ServiceFreq<-colSums(ServiceBySite)
 names(ServiceFreq)<-NewNames[match(names(ServiceFreq),CurrentNames)]
+colnames(ServiceBySite)<-NewNames[match(colnames(ServiceBySite),CurrentNames)]
 
 # Create a co-occurrence matrix of threats
 ServiceCount<-numeric(length=length(ServiceList)*length(ServiceList))
@@ -57,11 +58,6 @@ for(x in 1:nrow(NoDup)){
 }
 ServiceBySiteEdgeTable<-data.frame(Service1=NoDup[,1],Service2=NoDup[,2],Weight=NoDupWeight)
 
-# Simplify names
-ServiceBySiteEdgeTable$Service1<-NewNames[match(ServiceBySiteEdgeTable$Service1,CurrentNames)]
-ServiceBySiteEdgeTable$Service2<-NewNames[match(ServiceBySiteEdgeTable$Service2,CurrentNames)]
-
-
   ServiceBySiteEdgeTable2<-subset(ServiceBySiteEdgeTable,ServiceBySiteEdgeTable$Weight>(nrow(input)/100))
   graph <- graph.data.frame(ServiceBySiteEdgeTable2, directed = FALSE)
   E(graph)$width <- E(graph)$Weight/((max(E(graph)$Weight))/10) # Set edge width based on weight
@@ -70,5 +66,5 @@ ServiceBySiteEdgeTable$Service2<-NewNames[match(ServiceBySiteEdgeTable$Service2,
   GraphCoords<-Coords[match(names(V(graph)),rownames(Coords)),]
   if(GRAPH==TRUE) {plot(graph,layout=GraphCoords)}
 
-  return(list(graph, ServiceBySiteEdgeTable,GraphCoords))
+  return(list(graph, ServiceBySiteEdgeTable,GraphCoords,ServiceBySite))
 }

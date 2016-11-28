@@ -687,11 +687,63 @@ dev.off()
 
 
 
+############################################################################
+###
+### 04.7 Service co-occurrence statistics
+###
+############################################################################
+
+
+
+N2000Impact3_SPA_cooccur<-cooccur(t(N2000Impact3_SPA_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+# Sub-data-frame: select all rows from SPA that are positive (and low/medium/high)
+N2000Impact3_SPA_pos_cooccur<-cooccur(t(N2000Impact3_SPA_pos_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SPA_pos_low_cooccur<-cooccur(t(N2000Impact3_SPA_pos_low_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SPA_pos_medium_cooccur<-cooccur(t(N2000Impact3_SPA_pos_medium_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SPA_pos_high_cooccur<-cooccur(t(N2000Impact3_SPA_pos_high_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+# Sub-data-frame: select all rows from SPA that are negative (and low/medium/high)
+N2000Impact3_SPA_neg_cooccur<-cooccur(t(N2000Impact3_SPA_neg_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SPA_neg_low_cooccur<-cooccur(t(N2000Impact3_SPA_neg_low_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SPA_neg_medium_cooccur<-cooccur(t(N2000Impact3_SPA_neg_medium_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SPA_neg_high_cooccur<-cooccur(t(N2000Impact3_SPA_neg_high_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+# Sub-data-frame: select all rows from SPA that are positive (and in/out/both)
+N2000Impact3_SPA_pos_in_cooccur<-cooccur(t(N2000Impact3_SPA_pos_in_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SPA_pos_out_cooccur<-cooccur(t(N2000Impact3_SPA_pos_out_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SPA_pos_both_cooccur<-cooccur(t(N2000Impact3_SPA_pos_both_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+# Sub-data-frame: select all rows from SPA that are negative (and in/out/both)
+N2000Impact3_SPA_neg_in_cooccur<-cooccur(t(N2000Impact3_SPA_neg_in_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SPA_neg_out_cooccur<-cooccur(t(N2000Impact3_SPA_neg_out_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SPA_neg_both_cooccur<-cooccur(t(N2000Impact3_SPA_neg_both_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+
+
+### SCI (Site type B+C) ###
+
+# Sub-data-frame: select all rows from N2000Impact3 that are SCI
+N2000Impact3_SCI_cooccur<-cooccur(t(N2000Impact3_SCI_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+# Sub-data-frame: select all rows from SCI that are positive (and low/medium/high)
+N2000Impact3_SCI_pos_cooccur<-cooccur(t(N2000Impact3_SCI_pos_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SCI_pos_low_cooccur<-cooccur(t(N2000Impact3_SCI_pos_low_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SCI_pos_medium_cooccur<-cooccur(t(N2000Impact3_SCI_pos_medium_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SCI_pos_high_cooccur<-cooccur(t(N2000Impact3_SCI_pos_high_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+# Sub-data-frame: select all rows from SCI that are negative (and low/medium/high)
+N2000Impact3_SCI_neg_cooccur<-cooccur(t(N2000Impact3_SCI_neg_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SCI_neg_low_cooccur<-cooccur(t(N2000Impact3_SCI_neg_low_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SCI_neg_medium_cooccur<-cooccur(t(N2000Impact3_SCI_neg_medium_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SCI_neg_high_cooccur<-cooccur(t(N2000Impact3_SCI_neg_high_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+# Sub-data-frame: select all rows from SCI that are positive (and in/out/both)
+N2000Impact3_SCI_pos_in_cooccur<-cooccur(t(N2000Impact3_SCI_pos_in_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SCI_pos_out_cooccur<-cooccur(t(N2000Impact3_SCI_pos_out_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SCI_pos_both_cooccur<-cooccur(t(N2000Impact3_SCI_pos_both_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+# Sub-data-frame: select all rows from SCI that are negative (and in/out/both)
+N2000Impact3_SCI_neg_in_cooccur<-cooccur(t(N2000Impact3_SCI_neg_in_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SCI_neg_out_cooccur<-cooccur(t(N2000Impact3_SCI_neg_out_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SCI_neg_both_cooccur<-cooccur(t(N2000Impact3_SCI_neg_both_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+
 
 
 
 ############################################################################
-### 04.7 Code cemetery
+### 04.8 Code cemetery
 ###
 ### Below this line you can leave everything that might be of use at a later
 ### point in time ;)
