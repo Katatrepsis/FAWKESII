@@ -192,6 +192,88 @@ for(x in 1:nrow(N2000Impact3)){
 
 
 ############################################################################
+### 04.4B subsetting for screening of management plans
+###
+### 
+###
+############################################################################
+
+## starting with the N2000Impact2
+
+N2000Impact_sub<-N2000Impact2
+
+### get sitecodes
+for(x in 1:nrow(N2000Impact_sub)){
+  N2000Impact_sub$SITE_TYPE[x] <- N2000Sites[match(N2000Impact_sub$SITECODE[x],N2000Sites$SITECODE),4]
+}
+
+### restrict to SPA (A+C) only
+N2000Impact_sub<-N2000Impact_sub[which(N2000Impact_sub$SITE_TYPE != "B"),]
+
+### restrict to spoken languages in the FAWKES 2 team
+# create country column
+N2000Impact_sub$COUNTRY<-substr(N2000Impact_sub$SITECODE,1,2)
+# create spoken langusges list
+selected_languages<-c("DE","CZ","SE","IT","ES","PO","FR","PT","UK","AT","IE")
+# subset
+N2000Impact_sub<-N2000Impact_sub[N2000Impact_sub$COUNTRY %in% selected_languages,]
+
+### restrict to sites that have links to management plans
+# add url information
+N2000Management <- read.csv("MANAGEMENT.csv")
+N2000Sites[,6] <- as.character(N2000Sites[,6])
+for(x in 1:nrow(N2000Impact_sub)){    N2000Impact_sub$PLAN_URL[x] <- N2000Management[match(N2000Impact_sub$SITECODE[x],N2000Management$SITECODE),6]}
+#subset
+N2000Impact3_SPA3<-N2000Impact3_SPA2[N2000Impact3_SPA2$PLAN_URL !=1673,]
+
+### with the shortened list we now add the service names and restrict them
+
+# Add service name to N2000Impact_sub data frame
+d <- as.data.frame(matrix(,nrow=nrow(N2000Impact_sub), ncol=4))
+colnames(d) <- c("SERVICE 1", "SERVICE 2", "SERVICE 3", "SERVICE 4")
+for(x in 1:nrow(N2000Impact_sub)){
+  i = 1
+  for(y in 11:29){
+    if(!is.na(MappingData[match(N2000Impact_sub$ThreatWithService[x],MappingData$ACT_Code),y])){
+      #      d[x,i] <- y
+      d[x,i] <- colnames(MappingData)[y]
+      i = i+1
+    }
+  }
+}
+
+# Add Services to N2000Impact_sub data frame and create additional rows if there is more than one service related to
+# the threat, i.e. one row per service
+
+# Convert factors to characters in N2000Impact_sub
+for(i in 1:10){
+  N2000Impact_sub[,i] <- as.character(N2000Impact_sub[,i])
+}
+# Create new data frame N2000Impact3 by adding services to N2000Impact_sub
+
+N2000Impact_sub2 <- as.data.frame(matrix(,ncol=12))
+colnames(N2000Impact_sub2) <- c(colnames(N2000Impact_sub), "SERVICE")
+i = 1
+for(x in 1:nrow(d)){
+  for(y in 1:ncol(d)){
+    if(!is.na(d[x,y])){
+      N2000Impact_sub2[i,1:11] <- N2000Impact_sub[x,]
+      N2000Impact_sub2[i,12] <- d[x,y]
+      i = i+1
+    }
+  }
+}
+
+
+
+### restrict to three services
+selected_services<-c("Experiential.use.of.plants..animals.and.land..seascapes.in.different.environmental.settings","Flood.protection","Reared.animals.and.their.outputs")
+N2000Impact_sub2<-N2000Impact_sub2[N2000Impact_sub2$SERVICE %in% selected_services,]
+
+
+
+
+############################################################################
 ### 04.5 Bar plots
 ###
 ### Creates bar plots of proportions of impacts in SPA and SCI sites on
