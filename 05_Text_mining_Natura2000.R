@@ -29,17 +29,19 @@ setwd(path2temp %+% "/")
 # Load MANAGEMENT CSV into workspace
 management<-read.csv("MANAGEMENT.csv")
 
-# Find UK sites for which management plans are available PDFs online
-UKmanagement<-subset(management,substr(management$SITECODE,1,2)=="UK" & management$MANAG_PLAN_URL!="NULL")
-# Remove duplicates, which are due to submissions by both NE and CCW
-UKmanagement<-unique(UKmanagement[,c(1,6)])
-
 # Create character vectors for site ID and PDF link
-UKSites<-as.character(UKmanagement$ï..SITECODE)
-UKPDFs<-as.character(UKmanagement$MANAG_PLAN_URL)
+management$SITECODE<-as.character(management$ï..SITECODE)
+management$MANAG_PLAN_URL<-as.character(management$MANAG_PLAN_URL)
+
+CompletePlans<-subset(management, management$MANAG_PLAN_URL!="NULL")
+UniquePlans<-unique(CompletePlans[,c(1,6)])
+PDFPlans<-UniquePlans[grep(".pdf",UniquePlans[,2]),]
+PDFPlans$Country<-substr(PDFPlans[,1],1,2)
+
+UKManPlans<-subset(PDFPlans,PDFPlans$Country=="UK")
 
 # Download PDFs from web into wd (currently just the first three)
-for(x in 1:20){download.file(UKPDFs[x], paste(UKSites[x],".pdf",sep=""), mode="wb")}
+for(x in 1:116){download.file(UKManPlans$MANAG_PLAN_URL[x], paste(UKManPlans$SITECODE[x],".pdf",sep=""), mode="wb")}
 
 # Retrieve a list of PDFs from that folder
 files <- list.files(pattern = "pdf$")
@@ -49,7 +51,7 @@ files <- list.files(pattern = "pdf$")
 # of these can be seen below. Current code is restricted to three PDFs as an example
 # but can be extended to all 127
 Rpdf <- readPDF(control = list(text = "-layout"))
-natura <- Corpus(URISource(files[c(1:20)]), 
+natura <- Corpus(URISource(files[c(1:116)]), 
                    readerControl = list(reader = Rpdf))
 
 # The corpus object can then be "crunched" to find the frequency of words, after some
@@ -87,7 +89,7 @@ TDM.common = removeSparseTerms(natura.tdm, 0.8)
 inspect(TDM.common)
 
 # We can also find associations among words in the text
-findAssocs(natura.tdm, "threat", 0.95) # note "Himalayan" and "balsam" are both common
+findAssocs(natura.tdm, "water", 0.8) # note "Himalayan" and "balsam" are both common
 
 # Visualise the output using a matrix plot to compare texts
 TDM.dense <- as.matrix(natura.tdm[ft,])

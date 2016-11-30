@@ -4,12 +4,13 @@
 ### Create barplots of proportions of impacts in SPA and SCI sites on
 ### ecosystem services
 ### 
-### 04.1. N2000Impact data frame
+### 04.1 N2000Impact data frame
 ### 04.2 Associations of services
 ### 04.3 Add services to N2000Impact3 data frame
 ### 04.4 Add site type to N2000Impact3 data frame
 ### 04.5 Bar plots
-### 04.6 Code cemetery
+### 04.6 Network plots
+### 04.7 Code cemetery
 ###
 ### Authors: CH, AC, MB, AK
 ###
@@ -80,8 +81,8 @@ N2000Impact$IMPACTCODE[which(N2000Impact$IMPACTCODE=="G.01.04.03")]<-"G01.04.03"
 N2000Impact$IMPACTCODE[which(N2000Impact$IMPACTCODE=="F3.01.01")]<-"F03.01.01" 
 N2000Impact$IMPACTCODE[which(N2000Impact$IMPACTCODE=="C3.03")]<-"C03.03"
 
-# Remove duplicate lines (still needs to be coded, e.g. lines with sitecode AT1101112)
-# check duplicated()
+# Remove duplicate lines
+N2000Impact<-N2000Impact[!duplicated(N2000Impact),]
 
 
 ############################################################################
@@ -148,23 +149,165 @@ for(i in 1:8){
 }
 # test with str(N2000Impact2)
 
-# Create new data frame N2000Impact3 by adding services to N2000Impact2
-# Takes a long time to run (ca. 5hrs!)
+# Create new data frame N2000Impact3 by adding services to N2000Impact2. The original code took
+# ca. 5 hrs to run due to geometrically-increasing computation times associated with elongating
+# the dataframe. It has now been broken up into 10 separate loops and runs in ca. 7 minutes :-)
+# Create vector of increments
+from_d<-seq(1,nrow(d),by=round(nrow(d)/10))[-c(11)]
+to_d<-seq(0,nrow(d),by=round(nrow(d)/10))[-1]
+to_d[10]<-nrow(d)
 
-#ptm <- proc.time()
-N2000Impact3 <- as.data.frame(matrix(,ncol=9))
-colnames(N2000Impact3) <- c(colnames(N2000Impact2), "SERVICE")
+# Time the full loop
+ptm_full <- proc.time()
+
+#  1/10 of the loop -> "N2000Impact3a"
+N2000Impact3a <- as.data.frame(matrix(,ncol=9))
+colnames(N2000Impact3a) <- c(colnames(N2000Impact2), "SERVICE")
 i = 1
-for(x in 1:nrow(d)){
+for(x in from_d[1]:to_d[1]){
   for(y in 1:ncol(d)){
     if(!is.na(d[x,y])){
-      N2000Impact3[i,1:8] <- N2000Impact2[x,]
-      N2000Impact3[i,9] <- d[x,y]
+      N2000Impact3a[i,1:8] <- N2000Impact2[x,]
+      N2000Impact3a[i,9] <- d[x,y]
       i = i+1
     }
   }
 }
-#proc.time() - ptm
+
+#  2/10 of the loop -> "N2000Impact3b"
+N2000Impact3b <- as.data.frame(matrix(,ncol=9))
+colnames(N2000Impact3b) <- c(colnames(N2000Impact2), "SERVICE")
+i = 1
+for(x in from_d[2]:to_d[2]){
+  for(y in 1:ncol(d)){
+    if(!is.na(d[x,y])){
+      N2000Impact3b[i,1:8] <- N2000Impact2[x,]
+      N2000Impact3b[i,9] <- d[x,y]
+      i = i+1
+    }
+  }
+}
+
+#  3/10 of the loop -> "N2000Impact3c"
+N2000Impact3c <- as.data.frame(matrix(,ncol=9))
+colnames(N2000Impact3c) <- c(colnames(N2000Impact2), "SERVICE")
+i = 1
+for(x in from_d[3]:to_d[3]){
+  for(y in 1:ncol(d)){
+    if(!is.na(d[x,y])){
+      N2000Impact3c[i,1:8] <- N2000Impact2[x,]
+      N2000Impact3c[i,9] <- d[x,y]
+      i = i+1
+    }
+  }
+}
+
+#  4/10 of the loop -> "N2000Impact3d"
+N2000Impact3d <- as.data.frame(matrix(,ncol=9))
+colnames(N2000Impact3d) <- c(colnames(N2000Impact2), "SERVICE")
+i = 1
+for(x in from_d[4]:to_d[4]){
+  for(y in 1:ncol(d)){
+    if(!is.na(d[x,y])){
+      N2000Impact3d[i,1:8] <- N2000Impact2[x,]
+      N2000Impact3d[i,9] <- d[x,y]
+      i = i+1
+    }
+  }
+}
+
+# 5/10 of the loop -> "N2000Impact3e"
+N2000Impact3e <- as.data.frame(matrix(,ncol=9))
+colnames(N2000Impact3e) <- c(colnames(N2000Impact2), "SERVICE")
+i = 1
+for(x in from_d[5]:to_d[5]){
+  for(y in 1:ncol(d)){
+    if(!is.na(d[x,y])){
+      N2000Impact3e[i,1:8] <- N2000Impact2[x,]
+      N2000Impact3e[i,9] <- d[x,y]
+      i = i+1
+    }
+  }
+}
+
+# 6/10 of the loop -> "N2000Impact3f"
+N2000Impact3f <- as.data.frame(matrix(,ncol=9))
+colnames(N2000Impact3f) <- c(colnames(N2000Impact2), "SERVICE")
+i = 1
+for(x in from_d[6]:to_d[6]){
+  for(y in 1:ncol(d)){
+    if(!is.na(d[x,y])){
+      N2000Impact3f[i,1:8] <- N2000Impact2[x,]
+      N2000Impact3f[i,9] <- d[x,y]
+      i = i+1
+    }
+  }
+}
+
+# 7/10 of the loop -> "N2000Impact3g"
+N2000Impact3g <- as.data.frame(matrix(,ncol=9))
+colnames(N2000Impact3g) <- c(colnames(N2000Impact2), "SERVICE")
+i = 1
+for(x in from_d[7]:to_d[7]){
+  for(y in 1:ncol(d)){
+    if(!is.na(d[x,y])){
+      N2000Impact3g[i,1:8] <- N2000Impact2[x,]
+      N2000Impact3g[i,9] <- d[x,y]
+      i = i+1
+    }
+  }
+}
+
+# 8/10 of the loop -> "N2000Impact3h"
+N2000Impact3h <- as.data.frame(matrix(,ncol=9))
+colnames(N2000Impact3h) <- c(colnames(N2000Impact2), "SERVICE")
+i = 1
+for(x in from_d[8]:to_d[8]){
+  for(y in 1:ncol(d)){
+    if(!is.na(d[x,y])){
+      N2000Impact3h[i,1:8] <- N2000Impact2[x,]
+      N2000Impact3h[i,9] <- d[x,y]
+      i = i+1
+    }
+  }
+}
+
+# 9/10 of the loop -> "N2000Impact3i"
+N2000Impact3i <- as.data.frame(matrix(,ncol=9))
+colnames(N2000Impact3i) <- c(colnames(N2000Impact2), "SERVICE")
+i = 1
+for(x in from_d[9]:to_d[9]){
+  for(y in 1:ncol(d)){
+    if(!is.na(d[x,y])){
+      N2000Impact3i[i,1:8] <- N2000Impact2[x,]
+      N2000Impact3i[i,9] <- d[x,y]
+      i = i+1
+    }
+  }
+}
+
+# 10/10 of the loop -> "N2000Impact3j"
+N2000Impact3j <- as.data.frame(matrix(,ncol=9))
+colnames(N2000Impact3j) <- c(colnames(N2000Impact2), "SERVICE")
+i = 1
+for(x in from_d[10]:to_d[10]){
+  for(y in 1:ncol(d)){
+    if(!is.na(d[x,y])){
+      N2000Impact3j[i,1:8] <- N2000Impact2[x,]
+      N2000Impact3j[i,9] <- d[x,y]
+      i = i+1
+    }
+  }
+}
+
+proc.time() - ptm_full
+
+
+
+# Bind the four quarters together
+N2000Impact3<-rbind(N2000Impact3a,N2000Impact3b,N2000Impact3c,N2000Impact3d,N2000Impact3e,N2000Impact3f,N2000Impact3g,N2000Impact3h,N2000Impact3i,N2000Impact3j)
+
+
 #write.csv(N2000Impact3, file = "N2000Impact3.csv")
 
 
@@ -449,7 +592,240 @@ barplot(as.matrix(IOB_NEG), horiz=TRUE, las=2, legend=T, main="SCI - NEG_IOB")
 
 
 ############################################################################
-### 04.6 Code cemetery
+### 04.6 Networks showing associations between services
+### Useful tutorial here: http://kateto.net/network-visualization
+### relies on the function ES_Graph.r, which processes the
+### input data frame to produce an edge table and igraph() object
+############################################################################
+
+# Associations of services
+
+# Load helper script (to be copied into 01)
+source(path2wd %+% "ES_Graph.r")
+
+### SPA (Site type A) ###
+ptm <- proc.time() # 24 minutes
+# Sub-data-frame: select all rows from N2000Impact3 that are SPA
+N2000Impact3_SPA_graph<-ES_Graph(N2000Impact3_SPA,GRAPH=FALSE)
+# Sub-data-frame: select all rows from SPA that are positive (and low/medium/high)
+N2000Impact3_SPA_pos_graph<-ES_Graph(N2000Impact3_SPA_pos,GRAPH=FALSE)
+N2000Impact3_SPA_pos_low_graph<-ES_Graph(N2000Impact3_SPA_pos_low,GRAPH=FALSE)
+N2000Impact3_SPA_pos_medium_graph<-ES_Graph(N2000Impact3_SPA_pos_medium,GRAPH=FALSE)
+N2000Impact3_SPA_pos_high_graph<-ES_Graph(N2000Impact3_SPA_pos_high,GRAPH=FALSE)
+# Sub-data-frame: select all rows from SPA that are negative (and low/medium/high)
+N2000Impact3_SPA_neg_graph<-ES_Graph(N2000Impact3_SPA_neg,GRAPH=FALSE)
+N2000Impact3_SPA_neg_low_graph<-ES_Graph(N2000Impact3_SPA_neg_low,GRAPH=FALSE)
+N2000Impact3_SPA_neg_medium_graph<-ES_Graph(N2000Impact3_SPA_neg_medium,GRAPH=FALSE)
+N2000Impact3_SPA_neg_high_graph<-ES_Graph(N2000Impact3_SPA_neg_high,GRAPH=FALSE)
+# Sub-data-frame: select all rows from SPA that are positive (and in/out/both)
+N2000Impact3_SPA_pos_in_graph<-ES_Graph(N2000Impact3_SPA_pos_in,GRAPH=FALSE)
+N2000Impact3_SPA_pos_out_graph<-ES_Graph(N2000Impact3_SPA_pos_out,GRAPH=FALSE)
+N2000Impact3_SPA_pos_both_graph<-ES_Graph(N2000Impact3_SPA_pos_both,GRAPH=FALSE)
+# Sub-data-frame: select all rows from SPA that are negative (and in/out/both)
+N2000Impact3_SPA_neg_in_graph<-ES_Graph(N2000Impact3_SPA_neg_in,GRAPH=FALSE)
+N2000Impact3_SPA_neg_out_graph<-ES_Graph(N2000Impact3_SPA_neg_out,GRAPH=FALSE)
+N2000Impact3_SPA_neg_both_graph<-ES_Graph(N2000Impact3_SPA_neg_both,GRAPH=FALSE)
+
+proc.time() - ptm # 
+
+
+### SCI (Site type B+C) ###
+ptm <- proc.time()
+# Sub-data-frame: select all rows from N2000Impact3 that are SCI
+N2000Impact3_SCI_graph<-ES_Graph(N2000Impact3_SCI,GRAPH=FALSE)
+# Sub-data-frame: select all rows from SCI that are positive (and low/medium/high)
+N2000Impact3_SCI_pos_graph<-ES_Graph(N2000Impact3_SCI_pos,GRAPH=FALSE)
+N2000Impact3_SCI_pos_low_graph<-ES_Graph(N2000Impact3_SCI_pos_low,GRAPH=FALSE)
+N2000Impact3_SCI_pos_medium_graph<-ES_Graph(N2000Impact3_SCI_pos_medium,GRAPH=FALSE)
+N2000Impact3_SCI_pos_high_graph<-ES_Graph(N2000Impact3_SCI_pos_high,GRAPH=FALSE)
+# Sub-data-frame: select all rows from SCI that are negative (and low/medium/high)
+N2000Impact3_SCI_neg_graph<-ES_Graph(N2000Impact3_SCI_neg,GRAPH=FALSE)
+N2000Impact3_SCI_neg_low_graph<-ES_Graph(N2000Impact3_SCI_neg_low,GRAPH=FALSE)
+N2000Impact3_SCI_neg_medium_graph<-ES_Graph(N2000Impact3_SCI_neg_medium,GRAPH=FALSE)
+N2000Impact3_SCI_neg_high_graph<-ES_Graph(N2000Impact3_SCI_neg_high,GRAPH=FALSE)
+# Sub-data-frame: select all rows from SCI that are positive (and in/out/both)
+N2000Impact3_SCI_pos_in_graph<-ES_Graph(N2000Impact3_SCI_pos_in,GRAPH=FALSE)
+N2000Impact3_SCI_pos_out_graph<-ES_Graph(N2000Impact3_SCI_pos_out,GRAPH=FALSE)
+N2000Impact3_SCI_pos_both_graph<-ES_Graph(N2000Impact3_SCI_pos_both,GRAPH=FALSE)
+# Sub-data-frame: select all rows from SCI that are negative (and in/out/both)
+N2000Impact3_SCI_neg_in_graph<-ES_Graph(N2000Impact3_SCI_neg_in,GRAPH=FALSE)
+N2000Impact3_SCI_neg_out_graph<-ES_Graph(N2000Impact3_SCI_neg_out,GRAPH=FALSE)
+N2000Impact3_SCI_neg_both_graph<-ES_Graph(N2000Impact3_SCI_neg_both,GRAPH=FALSE)
+
+proc.time() - ptm
+
+
+
+# Plotting the resulting graphs
+par(mfrow=c(2,2),mar=c(1,1,1,1))
+
+
+
+# Sub-data-frame: select all rows from N2000Impact3 that are SPA
+png("N2000Impact3_SPA_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SPA_graph[[1]],main="N2000Impact3_SPA",layout=N2000Impact3_SPA_graph[[3]])
+dev.off()
+# Sub-data-frame: select all rows from SPA that are positive (and low/medium/high)
+png("N2000Impact3_SPA_pos_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SPA_pos_graph[[1]],main="N2000Impact3_SPA_pos",layout=N2000Impact3_SPA_pos_graph[[3]])
+dev.off()
+png("N2000Impact3_SPA_pos_low_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SPA_pos_low_graph[[1]],main="N2000Impact3_SPA_pos_low",layout=N2000Impact3_SPA_pos_low_graph[[3]])
+dev.off()
+png("N2000Impact3_SPA_pos_medium_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SPA_pos_medium_graph[[1]],main="N2000Impact3_SPA_pos_medium",layout=N2000Impact3_SPA_pos_medium_graph[[3]])
+dev.off()
+png("N2000Impact3_SPA_pos_high_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SPA_pos_high_graph[[1]],main="N2000Impact3_SPA_pos_high",layout=N2000Impact3_SPA_pos_high_graph[[3]])
+dev.off()
+# Sub-data-frame: select all rows from SPA that are negative (and low/medium/high)
+png("N2000Impact3_SPA_neg_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SPA_neg_graph[[1]],main="N2000Impact3_SPA_neg",layout=N2000Impact3_SPA_neg_graph[[3]])
+dev.off()
+png("N2000Impact3_SPA_neg_low_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SPA_neg_low_graph[[1]],main="N2000Impact3_SPA_neg_low",layout=N2000Impact3_SPA_neg_low_graph[[3]])
+dev.off()
+png("N2000Impact3_SPA_neg_medium_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SPA_neg_medium_graph[[1]],main="N2000Impact3_SPA_neg_medium",layout=N2000Impact3_SPA_neg_medium_graph[[3]])
+dev.off()
+png("N2000Impact3_SPA_neg_high_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SPA_neg_high_graph[[1]],main="N2000Impact3_SPA_neg_high",layout=N2000Impact3_SPA_neg_high_graph[[3]])
+dev.off()
+# Sub-data-frame: select all rows from SPA that are positive (and in/out/both)
+png("N2000Impact3_SPA_pos_in_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SPA_pos_in_graph[[1]],main="N2000Impact3_SPA_pos_in",layout=N2000Impact3_SPA_pos_in_graph[[3]])
+dev.off()
+png("N2000Impact3_SPA_pos_out_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SPA_pos_out_graph[[1]],main="N2000Impact3_SPA_pos_out",layout=N2000Impact3_SPA_pos_out_graph[[3]])
+dev.off()
+png("N2000Impact3_SPA_pos_both_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SPA_pos_both_graph[[1]],main="N2000Impact3_SPA_pos_both",layout=N2000Impact3_SPA_pos_both_graph[[3]])
+dev.off()
+# Sub-data-frame: select all rows from SPA that are negative (and in/out/both)
+png("N2000Impact3_SPA_neg_in_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SPA_neg_in_graph[[1]],main="N2000Impact3_SPA_neg_in",layout=N2000Impact3_SPA_neg_in_graph[[3]])
+dev.off()
+png("N2000Impact3_SPA_neg_out_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SPA_neg_out_graph[[1]],main="N2000Impact3_SPA_neg_out",layout=N2000Impact3_SPA_neg_out_graph[[3]])
+dev.off()
+png("N2000Impact3_SPA_neg_both_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SPA_neg_both_graph[[1]],main="N2000Impact3_SPA_neg_both",layout=N2000Impact3_SPA_neg_both_graph[[3]])
+dev.off()
+
+
+### SCI (Site type B+C) ###
+
+# Sub-data-frame: select all rows from N2000Impact3 that are SCI
+png("N2000Impact3_SCI_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SCI_graph[[1]],main="N2000Impact3_SCI",layout=N2000Impact3_SCI_graph[[3]])
+dev.off()
+# Sub-data-frame: select all rows from SCI that are positive (and low/medium/high)
+png("N2000Impact3_SCI_pos_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SCI_pos_graph[[1]],main="N2000Impact3_SCI_pos",layout=N2000Impact3_SCI_pos_graph[[3]])
+dev.off()
+png("N2000Impact3_SCI_pos_low_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SCI_pos_low_graph[[1]],main="N2000Impact3_SCI_pos_low",layout=N2000Impact3_SCI_pos_low_graph[[3]])
+dev.off()
+png("N2000Impact3_SCI_pos_medium_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SCI_pos_medium_graph[[1]],main="N2000Impact3_SCI_pos_medium",layout=N2000Impact3_SCI_pos_medium_graph[[3]])
+dev.off()
+png("N2000Impact3_SCI_pos_high_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SCI_pos_high_graph[[1]],main="N2000Impact3_SCI_pos_high",layout=N2000Impact3_SCI_pos_high_graph[[3]])
+dev.off()
+# Sub-data-frame: select all rows from SCI that are negative (and low/medium/high)
+png("N2000Impact3_SCI_neg_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SCI_neg_graph[[1]],main="N2000Impact3_SCI_neg",layout=N2000Impact3_SCI_neg_graph[[3]])
+dev.off()
+png("N2000Impact3_SCI_neg_low_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SCI_neg_low_graph[[1]],main="N2000Impact3_SCI_neg_low",layout=N2000Impact3_SCI_neg_low_graph[[3]])
+dev.off()
+png("N2000Impact3_SCI_neg_medium_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SCI_neg_medium_graph[[1]],main="N2000Impact3_SCI_neg_medium",layout=N2000Impact3_SCI_neg_medium_graph[[3]])
+dev.off()
+png("N2000Impact3_SCI_neg_high_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SCI_neg_high_graph[[1]],main="N2000Impact3_SCI_neg_high",layout=N2000Impact3_SCI_neg_high_graph[[3]])
+dev.off()
+# Sub-data-frame: select all rows from SCI that are positive (and in/out/both)
+png("N2000Impact3_SCI_pos_in_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SCI_pos_in_graph[[1]],main="N2000Impact3_SCI_pos_in",layout=N2000Impact3_SCI_pos_in_graph[[3]])
+dev.off()
+png("N2000Impact3_SCI_pos_out_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SCI_pos_out_graph[[1]],main="N2000Impact3_SCI_pos_out",layout=N2000Impact3_SCI_pos_out_graph[[3]])
+dev.off()
+png("N2000Impact3_SCI_pos_both_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SCI_pos_both_graph[[1]],main="N2000Impact3_SCI_pos_both",layout=N2000Impact3_SCI_pos_both_graph[[3]])
+dev.off()
+# Sub-data-frame: select all rows from SCI that are negative (and in/out/both)
+png("N2000Impact3_SCI_neg_in_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SCI_neg_in_graph[[1]],main="N2000Impact3_SCI_neg_in",layout=N2000Impact3_SCI_neg_in_graph[[3]])
+dev.off()
+png("N2000Impact3_SCI_neg_out_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SCI_neg_out_graph[[1]],main="N2000Impact3_SCI_neg_out",layout=N2000Impact3_SCI_neg_out_graph[[3]])
+dev.off()
+png("N2000Impact3_SCI_neg_both_graph.png", width=8, height=8, units="in", res=300)
+plot(N2000Impact3_SCI_neg_both_graph[[1]],main="N2000Impact3_SCI_neg_both",layout=N2000Impact3_SCI_neg_both_graph[[3]])
+dev.off()
+
+
+
+
+############################################################################
+###
+### 04.7 Service co-occurrence statistics
+###
+############################################################################
+
+
+
+N2000Impact3_SPA_cooccur<-cooccur(t(N2000Impact3_SPA_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+# Sub-data-frame: select all rows from SPA that are positive (and low/medium/high)
+N2000Impact3_SPA_pos_cooccur<-cooccur(t(N2000Impact3_SPA_pos_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SPA_pos_low_cooccur<-cooccur(t(N2000Impact3_SPA_pos_low_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SPA_pos_medium_cooccur<-cooccur(t(N2000Impact3_SPA_pos_medium_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SPA_pos_high_cooccur<-cooccur(t(N2000Impact3_SPA_pos_high_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+# Sub-data-frame: select all rows from SPA that are negative (and low/medium/high)
+N2000Impact3_SPA_neg_cooccur<-cooccur(t(N2000Impact3_SPA_neg_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SPA_neg_low_cooccur<-cooccur(t(N2000Impact3_SPA_neg_low_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SPA_neg_medium_cooccur<-cooccur(t(N2000Impact3_SPA_neg_medium_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SPA_neg_high_cooccur<-cooccur(t(N2000Impact3_SPA_neg_high_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+# Sub-data-frame: select all rows from SPA that are positive (and in/out/both)
+N2000Impact3_SPA_pos_in_cooccur<-cooccur(t(N2000Impact3_SPA_pos_in_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SPA_pos_out_cooccur<-cooccur(t(N2000Impact3_SPA_pos_out_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SPA_pos_both_cooccur<-cooccur(t(N2000Impact3_SPA_pos_both_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+# Sub-data-frame: select all rows from SPA that are negative (and in/out/both)
+N2000Impact3_SPA_neg_in_cooccur<-cooccur(t(N2000Impact3_SPA_neg_in_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SPA_neg_out_cooccur<-cooccur(t(N2000Impact3_SPA_neg_out_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SPA_neg_both_cooccur<-cooccur(t(N2000Impact3_SPA_neg_both_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+
+
+### SCI (Site type B+C) ###
+
+# Sub-data-frame: select all rows from N2000Impact3 that are SCI
+N2000Impact3_SCI_cooccur<-cooccur(t(N2000Impact3_SCI_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+# Sub-data-frame: select all rows from SCI that are positive (and low/medium/high)
+N2000Impact3_SCI_pos_cooccur<-cooccur(t(N2000Impact3_SCI_pos_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SCI_pos_low_cooccur<-cooccur(t(N2000Impact3_SCI_pos_low_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SCI_pos_medium_cooccur<-cooccur(t(N2000Impact3_SCI_pos_medium_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SCI_pos_high_cooccur<-cooccur(t(N2000Impact3_SCI_pos_high_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+# Sub-data-frame: select all rows from SCI that are negative (and low/medium/high)
+N2000Impact3_SCI_neg_cooccur<-cooccur(t(N2000Impact3_SCI_neg_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SCI_neg_low_cooccur<-cooccur(t(N2000Impact3_SCI_neg_low_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SCI_neg_medium_cooccur<-cooccur(t(N2000Impact3_SCI_neg_medium_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SCI_neg_high_cooccur<-cooccur(t(N2000Impact3_SCI_neg_high_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+# Sub-data-frame: select all rows from SCI that are positive (and in/out/both)
+N2000Impact3_SCI_pos_in_cooccur<-cooccur(t(N2000Impact3_SCI_pos_in_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SCI_pos_out_cooccur<-cooccur(t(N2000Impact3_SCI_pos_out_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SCI_pos_both_cooccur<-cooccur(t(N2000Impact3_SCI_pos_both_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+# Sub-data-frame: select all rows from SCI that are negative (and in/out/both)
+N2000Impact3_SCI_neg_in_cooccur<-cooccur(t(N2000Impact3_SCI_neg_in_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SCI_neg_out_cooccur<-cooccur(t(N2000Impact3_SCI_neg_out_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+N2000Impact3_SCI_neg_both_cooccur<-cooccur(t(N2000Impact3_SCI_neg_both_graph[[4]]),type = "spp_site", thresh = FALSE, spp_names = TRUE)
+
+
+
+
+############################################################################
+### 04.8 Code cemetery
 ###
 ### Below this line you can leave everything that might be of use at a later
 ### point in time ;)
