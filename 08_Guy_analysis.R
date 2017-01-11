@@ -146,7 +146,7 @@ ServiceBySite<-cbind(ServiceBySite,NetESS)
 
 # Add Bioregion
 BIOREGION<-read.csv("BIOREGION.csv")
-ServiceBySite<-data.frame(ServiceBySite,Biogeog=as.factor(BIOREGION[match(rownames(ServiceBySite),BIOREGION$ï..SITECODE),2]))
+ServiceBySite<-data.frame(ServiceBySite,Biogeog=as.factor(BIOREGION[match(rownames(ServiceBySite),BIOREGION$SITECODE),2]))
 
 
 
@@ -204,7 +204,45 @@ barplot(t(Alpine_BarData)/(nrow(Alpine_ServiceBySite)/100),las=2, legend=T, main
 ### ESS by core habitat
 ############################################################################
 
-# Still to do
+# Load HABITATCLASS
+HABITATCLASS<-read.csv("HABITATCLASS.csv")
+# Convert % cover to a numeric variable
+HABITATCLASS$PERCENTAGECOVER<-as.numeric(as.vector(HABITATCLASS$PERCENTAGECOVER))
+# Extract a subset where the % cover is >=50%
+HABITATCLASS<-subset(HABITATCLASS,HABITATCLASS$PERCENTAGECOVER>=50)
+# Add that dominant habitat to the main table
+ServiceBySite<-cbind(ServiceBySite,DomHab=HABITATCLASS$HABITATCODE[match(rownames(ServiceBySite),HABITATCLASS$SITECODE)])
+
+# Subset the data to just include those sites with a dominant class
+DomHabData<-subset(ServiceBySite,ServiceBySite$DomHab%in%names(which(table(ServiceBySite$DomHab)>30)))
+# Guy used "any mention" as the response
+AnyMention<-matrix(nrow=nrow(DomHabData),ncol=11)
+for(x in 1:nrow(DomHabData)){
+  for(y in 1:11){
+    if(sum(DomHabData[x,c(y,y+11,y+22)])>0) {AnyMention[x,y]<-1} else {AnyMention[x,y]<-0}
+  }
+}
+
+# Find the average number of ESS per dominant habitat
+aggregate(rowSums(AnyMention), list(DomHabData$DomHab), mean)
+
+# Find the proportion of SPAs in each dominant habitat that mention each ESS
+xtabs(DomHabData$DomHab~AnyMention[,1])
+ESSByHab<-aggregate(AnyMention, list(DomHabData$DomHab), mean)
+
+# Tables of each habitat, with positive, negative, and both
+# First, N01
+N01_Data<-subset(DomHabData,DomHabData$DomHab=="N01")
+N01_ESS<-data.frame(Pos=t(unname(aggregate(N01_Data[,c(1:11)], list(N01_Data$DomHab), mean))),
+                   Neg=t(unname(aggregate(N01_Data[,c(12:22)], list(N01_Data$DomHab), mean))),
+                   Both=t(unname(aggregate(N01_Data[,c(23:33)], list(N01_Data$DomHab), mean))))[-1,]
+
+# Convert to numeric
+N01_ESS<-transform(N01_ESS, Pos = as.numeric(as.vector(Pos)),
+                   Neg = as.numeric(as.vector(Neg)),
+                   Both = as.numeric(as.vector(Both)))
+
+# I can get you this far, but I don't have time to learn ggplot2!
 
 ############################################################################
 ### Bird and IUCN conservation by net ESS
