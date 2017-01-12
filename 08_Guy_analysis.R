@@ -233,16 +233,99 @@ ESSByHab<-aggregate(AnyMention, list(DomHabData$DomHab), mean)
 # Tables of each habitat, with positive, negative, and both
 # First, N01
 N01_Data<-subset(DomHabData,DomHabData$DomHab=="N01")
+N02_Data<-subset(DomHabData,DomHabData$DomHab=="N02")
+N05_Data<-subset(DomHabData,DomHabData$DomHab=="N05")
+N06_Data<-subset(DomHabData,DomHabData$DomHab=="N06")
+N07_Data<-subset(DomHabData,DomHabData$DomHab=="N07")
+N08_Data<-subset(DomHabData,DomHabData$DomHab=="N08")
+N10_Data<-subset(DomHabData,DomHabData$DomHab=="N10")
+N12_Data<-subset(DomHabData,DomHabData$DomHab=="N12")
+N14_Data<-subset(DomHabData,DomHabData$DomHab=="N14")
+N15_Data<-subset(DomHabData,DomHabData$DomHab=="N15")
+N16_Data<-subset(DomHabData,DomHabData$DomHab=="N16")
+N17_Data<-subset(DomHabData,DomHabData$DomHab=="N17")
+N19_Data<-subset(DomHabData,DomHabData$DomHab=="N19")
+N23_Data<-subset(DomHabData,DomHabData$DomHab=="N23")
+
+# Find proportions
 N01_ESS<-data.frame(Pos=t(unname(aggregate(N01_Data[,c(1:11)], list(N01_Data$DomHab), mean))),
                    Neg=t(unname(aggregate(N01_Data[,c(12:22)], list(N01_Data$DomHab), mean))),
                    Both=t(unname(aggregate(N01_Data[,c(23:33)], list(N01_Data$DomHab), mean))))[-1,]
+N02_ESS<-data.frame(Pos=t(unname(aggregate(N02_Data[,c(1:11)], list(N02_Data$DomHab), mean))),
+                    Neg=t(unname(aggregate(N02_Data[,c(12:22)], list(N02_Data$DomHab), mean))),
+                    Both=t(unname(aggregate(N02_Data[,c(23:33)], list(N02_Data$DomHab), mean))))[-1,]
+N05_ESS<-data.frame(Pos=t(unname(aggregate(N05_Data[,c(1:11)], list(N05_Data$DomHab), mean))),
+                    Neg=t(unname(aggregate(N05_Data[,c(12:22)], list(N05_Data$DomHab), mean))),
+                    Both=t(unname(aggregate(N05_Data[,c(23:33)], list(N05_Data$DomHab), mean))))[-1,]
+N06_ESS<-data.frame(Pos=t(unname(aggregate(N06_Data[,c(1:11)], list(N06_Data$DomHab), mean))),
+                    Neg=t(unname(aggregate(N06_Data[,c(12:22)], list(N06_Data$DomHab), mean))),
+                    Both=t(unname(aggregate(N06_Data[,c(23:33)], list(N06_Data$DomHab), mean))))[-1,]
+N07_ESS<-data.frame(Pos=t(unname(aggregate(N07_Data[,c(1:11)], list(N07_Data$DomHab), mean))),
+                    Neg=t(unname(aggregate(N07_Data[,c(12:22)], list(N07_Data$DomHab), mean))),
+                    Both=t(unname(aggregate(N07_Data[,c(23:33)], list(N07_Data$DomHab), mean))))[-1,]
+N08_ESS<-data.frame(Pos=t(unname(aggregate(N08_Data[,c(1:11)], list(N08_Data$DomHab), mean))),
+                    Neg=t(unname(aggregate(N08_Data[,c(12:22)], list(N08_Data$DomHab), mean))),
+                    Both=t(unname(aggregate(N08_Data[,c(23:33)], list(N08_Data$DomHab), mean))))[-1,]
+N10_ESS<-data.frame(Pos=t(unname(aggregate(N10_Data[,c(1:11)], list(N10_Data$DomHab), mean))),
+                    Neg=t(unname(aggregate(N10_Data[,c(12:22)], list(N10_Data$DomHab), mean))),
+                    Both=t(unname(aggregate(N10_Data[,c(23:33)], list(N10_Data$DomHab), mean))))[-1,]
+N12_ESS<-data.frame(Pos=t(unname(aggregate(N12_Data[,c(1:11)], list(N12_Data$DomHab), mean))),
+                    Neg=t(unname(aggregate(N12_Data[,c(12:22)], list(N12_Data$DomHab), mean))),
+                    Both=t(unname(aggregate(N12_Data[,c(23:33)], list(N12_Data$DomHab), mean))))[-1,]
+N14_ESS<-data.frame(Pos=t(unname(aggregate(N14_Data[,c(1:11)], list(N14_Data$DomHab), mean))),
+                    Neg=t(unname(aggregate(N14_Data[,c(12:22)], list(N14_Data$DomHab), mean))),
+                    Both=t(unname(aggregate(N14_Data[,c(23:33)], list(N14_Data$DomHab), mean))))[-1,]
+N15_ESS<-data.frame(Pos=t(unname(aggregate(N15_Data[,c(1:11)], list(N15_Data$DomHab), mean))),
+                    Neg=t(unname(aggregate(N15_Data[,c(12:22)], list(N15_Data$DomHab), mean))),
+                    Both=t(unname(aggregate(N15_Data[,c(23:33)], list(N15_Data$DomHab), mean))))[-1,]
+N16_ESS<-data.frame(Pos=t(unname(aggregate(N16_Data[,c(1:11)], list(N16_Data$DomHab), mean))),
+                    Neg=t(unname(aggregate(N16_Data[,c(12:22)], list(N16_Data$DomHab), mean))),
+                    Both=t(unname(aggregate(N16_Data[,c(23:33)], list(N16_Data$DomHab), mean))))[-1,]
+N17_ESS<-data.frame(Pos=t(unname(aggregate(N17_Data[,c(1:11)], list(N17_Data$DomHab), mean))),
+                    Neg=t(unname(aggregate(N17_Data[,c(12:22)], list(N17_Data$DomHab), mean))),
+                    Both=t(unname(aggregate(N17_Data[,c(23:33)], list(N17_Data$DomHab), mean))))[-1,]
+N19_ESS<-data.frame(Pos=t(unname(aggregate(N19_Data[,c(1:11)], list(N19_Data$DomHab), mean))),
+                    Neg=t(unname(aggregate(N19_Data[,c(12:22)], list(N19_Data$DomHab), mean))),
+                    Both=t(unname(aggregate(N19_Data[,c(23:33)], list(N19_Data$DomHab), mean))))[-1,]
+N23_ESS<-data.frame(Pos=t(unname(aggregate(N23_Data[,c(1:11)], list(N23_Data$DomHab), mean))),
+                    Neg=t(unname(aggregate(N23_Data[,c(12:22)], list(N23_Data$DomHab), mean))),
+                    Both=t(unname(aggregate(N23_Data[,c(23:33)], list(N23_Data$DomHab), mean))))[-1,]
 
 # Convert to numeric
-N01_ESS<-transform(N01_ESS, Pos = as.numeric(as.vector(Pos)),
-                   Neg = as.numeric(as.vector(Neg)),
-                   Both = as.numeric(as.vector(Both)))
+N01_ESS<-transform(N01_ESS, Pos = as.numeric(as.vector(Pos)),Neg = as.numeric(as.vector(Neg)),Both = as.numeric(as.vector(Both)))
+N02_ESS<-transform(N02_ESS, Pos = as.numeric(as.vector(Pos)),Neg = as.numeric(as.vector(Neg)),Both = as.numeric(as.vector(Both)))
+N05_ESS<-transform(N05_ESS, Pos = as.numeric(as.vector(Pos)),Neg = as.numeric(as.vector(Neg)),Both = as.numeric(as.vector(Both)))
+N06_ESS<-transform(N06_ESS, Pos = as.numeric(as.vector(Pos)),Neg = as.numeric(as.vector(Neg)),Both = as.numeric(as.vector(Both)))
+N07_ESS<-transform(N07_ESS, Pos = as.numeric(as.vector(Pos)),Neg = as.numeric(as.vector(Neg)),Both = as.numeric(as.vector(Both)))
+N08_ESS<-transform(N08_ESS, Pos = as.numeric(as.vector(Pos)),Neg = as.numeric(as.vector(Neg)),Both = as.numeric(as.vector(Both)))
+N10_ESS<-transform(N10_ESS, Pos = as.numeric(as.vector(Pos)),Neg = as.numeric(as.vector(Neg)),Both = as.numeric(as.vector(Both)))
+N12_ESS<-transform(N12_ESS, Pos = as.numeric(as.vector(Pos)),Neg = as.numeric(as.vector(Neg)),Both = as.numeric(as.vector(Both)))
+N14_ESS<-transform(N14_ESS, Pos = as.numeric(as.vector(Pos)),Neg = as.numeric(as.vector(Neg)),Both = as.numeric(as.vector(Both)))
+N15_ESS<-transform(N15_ESS, Pos = as.numeric(as.vector(Pos)),Neg = as.numeric(as.vector(Neg)),Both = as.numeric(as.vector(Both)))
+N16_ESS<-transform(N16_ESS, Pos = as.numeric(as.vector(Pos)),Neg = as.numeric(as.vector(Neg)),Both = as.numeric(as.vector(Both)))
+N17_ESS<-transform(N17_ESS, Pos = as.numeric(as.vector(Pos)),Neg = as.numeric(as.vector(Neg)),Both = as.numeric(as.vector(Both)))
+N19_ESS<-transform(N19_ESS, Pos = as.numeric(as.vector(Pos)),Neg = as.numeric(as.vector(Neg)),Both = as.numeric(as.vector(Both)))
+N23_ESS<-transform(N23_ESS, Pos = as.numeric(as.vector(Pos)),Neg = as.numeric(as.vector(Neg)),Both = as.numeric(as.vector(Both)))
 
-# I can get you this far, but I don't have time to learn ggplot2!
+# Plot barcharts
+par(mfrow=c(4,4),mar=c(2,5.5,2,1))
+
+Services<-c("Crop","Fodder","Fibre","Livestock","Wild food","Aquaculture","Water","Erosion","Flow","Carbon seq","Recreation")
+
+barplot(t(as.matrix(N01_ESS)),main="N01: Marine",names.arg=Services,horiz=TRUE,las=1)
+barplot(t(as.matrix(N02_ESS)),main="N02: Intertidal",names.arg=Services,horiz=TRUE,las=1)
+barplot(t(as.matrix(N05_ESS)),main="N05: Shore",names.arg=Services,horiz=TRUE,las=1)
+barplot(t(as.matrix(N06_ESS)),main="N06: Inland water",names.arg=Services,horiz=TRUE,las=1)
+barplot(t(as.matrix(N07_ESS)),main="N07: Marshes",names.arg=Services,horiz=TRUE,las=1)
+barplot(t(as.matrix(N08_ESS)),main="N08: Heath",names.arg=Services,horiz=TRUE,las=1)
+barplot(t(as.matrix(N10_ESS)),main="N10: Grassland",names.arg=Services,horiz=TRUE,las=1)
+barplot(t(as.matrix(N12_ESS)),main="N12: Cropland",names.arg=Services,horiz=TRUE,las=1)
+barplot(t(as.matrix(N14_ESS)),main="N14: Improv grass",names.arg=Services,horiz=TRUE,las=1)
+barplot(t(as.matrix(N15_ESS)),main="N15: Other arable",names.arg=Services,horiz=TRUE,las=1)
+barplot(t(as.matrix(N16_ESS)),main="N16: Broad wood",names.arg=Services,horiz=TRUE,las=1)
+barplot(t(as.matrix(N17_ESS)),main="N17: Conif wood",names.arg=Services,horiz=TRUE,las=1)
+barplot(t(as.matrix(N19_ESS)),main="N19: Mixed wood",names.arg=Services,horiz=TRUE,las=1)
+barplot(t(as.matrix(N23_ESS)),main="N23: Other land",names.arg=Services,horiz=TRUE,las=1)
 
 ############################################################################
 ### Bird and IUCN conservation by net ESS
@@ -262,9 +345,7 @@ for(x in 1:nrow(ServiceBySite)){
   BirdIndex[x]<-mean(subset(BIRDSPECIES$SpeciesIndex,BIRDSPECIES$SITECODE==rownames(ServiceBySite)[x]))
 }
 
-par(mfrow=c(1,2))
-plot(NetESS,BirdIndex)
-
+par(mfrow=c(1,1),mar=c(5, 4, 4, 2) + 0.1)
 SummaryBirdData<-matrix(ncol=4,nrow=13)
 colnames(SummaryBirdData)<-c("NetESS","MeanBirdStatus","SE","N")
 for(x in 1:13){
@@ -277,6 +358,6 @@ plot(SummaryBirdData[,1],SummaryBirdData[,2],ylim=c(0.7,1.7),ylab="Bird Index",x
 arrows(SummaryBirdData[,1],SummaryBirdData[,2],SummaryBirdData[,1],SummaryBirdData[,2]+SummaryBirdData[,3],length=0)
 arrows(SummaryBirdData[,1],SummaryBirdData[,2],SummaryBirdData[,1],SummaryBirdData[,2]-SummaryBirdData[,3],length=0)
 text(SummaryBirdData[,1],SummaryBirdData[,2]+SummaryBirdData[,3]+0.05,labels=SummaryBirdData[,4])
-cor.test(NetESS,ServiceBySite$IUCN,method="spearman")
+cor.test(NetESS,BirdIndex,method="spearman")
 
 
