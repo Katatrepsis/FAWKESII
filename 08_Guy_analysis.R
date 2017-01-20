@@ -339,13 +339,27 @@ SPECIES$SpeciesIndex<-SpeciesIndex
 
 BIRDSPECIES<-subset(SPECIES,SPECIES$SPGROUP=="Birds")
 
-# Add bird and all species scores to the sites
-AllSpeciesIndex<-BirdIndex<-numeric(length=nrow(ServiceBySite))
+# Add bird scores to the sites
+IUCNIndex<-BirdIndex<-IUCNNumber<-BirdNumber<-numeric(length=nrow(ServiceBySite))
 for(x in 1:nrow(ServiceBySite)){
   BirdIndex[x]<-mean(subset(BIRDSPECIES$SpeciesIndex,BIRDSPECIES$SITECODE==rownames(ServiceBySite)[x]))
+  BirdNumber[x]<-length(subset(BIRDSPECIES$SpeciesIndex,BIRDSPECIES$SITECODE==rownames(ServiceBySite)[x]))
+  IUCNIndex[x]<-mean(c(rep(2,subset(SiteTrends$Inc,SiteTrends$Site==rownames(ServiceBySite)[x])),
+                       rep(1,subset(SiteTrends$Stable,SiteTrends$Site==rownames(ServiceBySite)[x])),
+                       rep(0,subset(SiteTrends$Dec,SiteTrends$Site==rownames(ServiceBySite)[x]))))
+  IUCNNumber[x]<-sum(subset(SiteTrends$Inc,SiteTrends$Site==rownames(ServiceBySite)[x]),
+                     subset(SiteTrends$Stable,SiteTrends$Site==rownames(ServiceBySite)[x]),
+                     subset(SiteTrends$Dec,SiteTrends$Site==rownames(ServiceBySite)[x]))
+  if(x%%100==0) {print(x)}
+  #print(x)
+  flush.console()
 }
 
-par(mfrow=c(1,1),mar=c(5, 4, 4, 2) + 0.1)
+par(mfrow=c(2,2))
+plot(NetESS,BirdIndex)
+plot(NetESS,IUCNIndex)
+
+
 SummaryBirdData<-matrix(ncol=4,nrow=13)
 colnames(SummaryBirdData)<-c("NetESS","MeanBirdStatus","SE","N")
 for(x in 1:13){
@@ -359,5 +373,21 @@ arrows(SummaryBirdData[,1],SummaryBirdData[,2],SummaryBirdData[,1],SummaryBirdDa
 arrows(SummaryBirdData[,1],SummaryBirdData[,2],SummaryBirdData[,1],SummaryBirdData[,2]-SummaryBirdData[,3],length=0)
 text(SummaryBirdData[,1],SummaryBirdData[,2]+SummaryBirdData[,3]+0.05,labels=SummaryBirdData[,4])
 cor.test(NetESS,BirdIndex,method="spearman")
+abline(lm(SummaryBirdData[,2]~SummaryBirdData[,1],weights=SummaryBirdData[,4]))
 
-
+SummaryIUCNData<-matrix(ncol=4,nrow=13)
+colnames(SummaryIUCNData)<-c("NetESS","MeanBirdStatus","SE","N")
+for(x in 1:13){
+  SummaryIUCNData[x,1]<-x-9
+  SummaryIUCNData[x,2]<-mean(subset(IUCNIndex,NetESS==x-9),na.rm=TRUE)
+  SummaryIUCNData[x,3]<-sd(subset(IUCNIndex,NetESS==x-9),na.rm=TRUE)/sqrt(length(subset(IUCNIndex,NetESS==x-9)))
+  SummaryIUCNData[x,4]<-length(subset(IUCNIndex,NetESS==x-9))
+}
+plot(SummaryIUCNData[,1],SummaryIUCNData[,2],ylim=c(0.4,0.73),ylab="IUCN Index",xlab="Net ESS")
+arrows(SummaryIUCNData[,1],SummaryIUCNData[,2],SummaryIUCNData[,1],SummaryIUCNData[,2]+SummaryIUCNData[,3],length=0)
+arrows(SummaryIUCNData[,1],SummaryIUCNData[,2],SummaryIUCNData[,1],SummaryIUCNData[,2]-SummaryIUCNData[,3],length=0)
+text(SummaryIUCNData[,1],SummaryIUCNData[,2]+SummaryIUCNData[,3]+0.05,labels=SummaryIUCNData[,4])
+cor.test(NetESS,IUCNIndex,method="spearman")
+abline(lm(SummaryIUCNData[,2]~SummaryIUCNData[,1],weights=SummaryIUCNData[,4]))
+cor.test(subset(NetESS,NetESS<4),subset(IUCNIndex,NetESS<4),method="spearman")
+abline(lm(SummaryIUCNData[c(1:12),2]~SummaryIUCNData[c(1:12),1],weights=SummaryIUCNData[c(1:12),4]),lty=2)
