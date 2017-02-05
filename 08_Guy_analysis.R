@@ -10,14 +10,6 @@
 ############################################################################
 
 ############################################################################
-### To do:
-### 
-###  [CH] Still need to do the "dominant habitat" analysis
-###  [CH] Attempt the rose diagrams that Guy suggested
-### 
-############################################################################
-
-############################################################################
 ### 08.1 N2000Impact data frame
 ###
 ### Create N2000Impact data frame as a base for further data analysis
@@ -421,9 +413,31 @@ abline(lm(SummaryIUCNData[c(1:12),2]~SummaryIUCNData[c(1:12),1],weights=SummaryI
 ### Bird conservation (from N2000) and IUCN status by mean net ESS
 ############################################################################
 
-statusTable
+# (i) the mean net ESS that each species experiences vs the mean “Bird index” score 
+# (based on the conservation status of each site)
+BirdSpeciesNames<-unique(BIRDSPECIES$SPECIESNAME)
+BirdSpeciesIndex<-numeric(length=length(BirdSpeciesNames))
+for(x in 1:length(BirdSpeciesNames)){
+  BirdSpeciesIndex[x]<-mean(subset(BIRDSPECIES$SpeciesIndex,BIRDSPECIES$SPECIESNAME==BirdSpeciesNames[x]))
+}
+
+BirdNetESS<-numeric(length=length(BirdSpeciesNames))
+for(x in 1:length(BirdSpeciesNames)){
+  BirdSites<-subset(BIRDSPECIES$SITECODE,BIRDSPECIES$SPECIESNAME==BirdSpeciesNames[x])
+  BirdNetESS[x]<-mean(subset(ServiceBySite$NetESS,rownames(ServiceBySite)%in%BirdSites))
+}
+
+plot(BirdSpeciesIndex,BirdNetESS)
+cor.test(BirdSpeciesIndex,BirdNetESS,method="spearman")
 
 
+# (ii) the IUCN classification for each species (increasing/decreasing/stable as 
+# well as VU, EN, etc) vs mean net ESS
+
+BirdSpeciesOutput<-data.frame(BirdSpecies=BirdSpeciesNames,ConservationIndex=BirdSpeciesIndex,
+                              NetESS=BirdNetESS,)
+
+statusTable[match(statusTable[,1],BirdSpeciesNames),1]
 
 # Data for map
 MikaOutput<-ServiceBySite[,c(1:44,50,52)]
