@@ -418,26 +418,53 @@ abline(lm(SummaryIUCNData[c(1:12),2]~SummaryIUCNData[c(1:12),1],weights=SummaryI
 BirdSpeciesNames<-unique(BIRDSPECIES$SPECIESNAME)
 BirdSpeciesIndex<-numeric(length=length(BirdSpeciesNames))
 for(x in 1:length(BirdSpeciesNames)){
-  BirdSpeciesIndex[x]<-mean(subset(BIRDSPECIES$SpeciesIndex,BIRDSPECIES$SPECIESNAME==BirdSpeciesNames[x]))
+  BirdSpeciesIndex[x]<-mean(subset(BIRDSPECIES$SpeciesIndex,BIRDSPECIES$SPECIESNAME==BirdSpeciesNames[x]),na.rm = TRUE)
 }
 
 BirdNetESS<-numeric(length=length(BirdSpeciesNames))
 for(x in 1:length(BirdSpeciesNames)){
   BirdSites<-subset(BIRDSPECIES$SITECODE,BIRDSPECIES$SPECIESNAME==BirdSpeciesNames[x])
-  BirdNetESS[x]<-mean(subset(ServiceBySite$NetESS,rownames(ServiceBySite)%in%BirdSites))
+  BirdNetESS[x]<-mean(subset(ServiceBySite$NetESS,rownames(ServiceBySite)%in%BirdSites),na.rm=TRUE)
 }
 
-plot(BirdSpeciesIndex,BirdNetESS)
+plot(BirdSpeciesIndex,jitter(BirdNetESS))
 cor.test(BirdSpeciesIndex,BirdNetESS,method="spearman")
 
 
 # (ii) the IUCN classification for each species (increasing/decreasing/stable as 
 # well as VU, EN, etc) vs mean net ESS
-
+# First, take the data from above
 BirdSpeciesOutput<-data.frame(BirdSpecies=BirdSpeciesNames,ConservationIndex=BirdSpeciesIndex,
-                              NetESS=BirdNetESS,)
+                              NetESS=BirdNetESS)
+# Next, find the species from the IUCN table which have >15% of their national pop in N2000 site
+SigSpeciesIUCN<-statusTable[na.omit(match(BirdSpeciesNames,statusTable[,1])),c(1,3,5)]
 
-statusTable[match(statusTable[,1],BirdSpeciesNames),1]
+# Now match the net ESS, bird index, and IUCN ratings for these species
+N2000ESSdata<-BirdSpeciesOutput[na.omit(match(SigSpeciesIUCN[,1],BirdSpeciesOutput[,1])),c(1:3)]
+
+# Bind together
+SigSpeciesIUCN2<-cbind(SigSpeciesIUCN,N2000ESSdata)
+
+# Question 1: Do species that are increasing/decreasing have different N2000 conservation indices?
+par(mfrow=c(1,2),mar=c(5,4,4,2)+0.1)
+boxplot(SigSpeciesIUCN2$ConservationIndex~SigSpeciesIUCN2$Population, ylab="Conservation index")
+kruskal.test((SigSpeciesIUCN2$ConservationIndex~SigSpeciesIUCN2$Population))
+
+# Question 2: Are species that are increasing/decreasing have different Net ESS on their N2000 sites
+boxplot(SigSpeciesIUCN2$NetESS~SigSpeciesIUCN2$Population,ylab="Net ESS")
+kruskal.test((SigSpeciesIUCN2$NetESS~SigSpeciesIUCN2$Population))
+
+# Question 3: Are species that are increasing/decreasing have different Net ESS on their N2000 sites
+boxplot(SigSpeciesIUCN2$ConservationIndex~SigSpeciesIUCN2$Status, ylab="Conservation index")
+kruskal.test((SigSpeciesIUCN2$ConservationIndex~SigSpeciesIUCN2$Status))
+
+# Question 3: Are species that are increasing/decreasing have different Net ESS on their N2000 sites
+boxplot(SigSpeciesIUCN2$NetESS~SigSpeciesIUCN2$Status ,ylab="Net ESS")
+kruskal.test((SigSpeciesIUCN2$NetESS~SigSpeciesIUCN2$Status))
+
+###############################################################
+# Other miscellaneous data
+###############################################################
 
 # Data for map
 MikaOutput<-ServiceBySite[,c(1:44,50,52)]
