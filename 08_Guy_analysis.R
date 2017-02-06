@@ -427,7 +427,8 @@ for(x in 1:length(BirdSpeciesNames)){
   BirdNetESS[x]<-mean(subset(ServiceBySite$NetESS,rownames(ServiceBySite)%in%BirdSites),na.rm=TRUE)
 }
 
-plot(BirdSpeciesIndex,jitter(BirdNetESS))
+plot(BirdSpeciesIndex,BirdNetESS)
+abline(lm(BirdNetESS~BirdSpeciesIndex))
 cor.test(BirdSpeciesIndex,BirdNetESS,method="spearman")
 
 
