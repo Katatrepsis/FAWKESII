@@ -450,6 +450,7 @@ SigSpeciesIUCN2<-cbind(SigSpeciesIUCN,N2000ESSdata)
 par(mfrow=c(1,2),mar=c(5,4,4,2)+0.1)
 boxplot(SigSpeciesIUCN2$ConservationIndex~SigSpeciesIUCN2$Population, ylab="Conservation index")
 kruskal.test((SigSpeciesIUCN2$ConservationIndex~SigSpeciesIUCN2$Population))
+table(SigSpeciesIUCN2$Population)
 
 # Question 2: Are species that are increasing/decreasing have different Net ESS on their N2000 sites
 boxplot(SigSpeciesIUCN2$NetESS~SigSpeciesIUCN2$Population,ylab="Net ESS")
@@ -458,6 +459,7 @@ kruskal.test((SigSpeciesIUCN2$NetESS~SigSpeciesIUCN2$Population))
 # Question 3: Are species that are increasing/decreasing have different Net ESS on their N2000 sites
 boxplot(SigSpeciesIUCN2$ConservationIndex~SigSpeciesIUCN2$Status, ylab="Conservation index")
 kruskal.test((SigSpeciesIUCN2$ConservationIndex~SigSpeciesIUCN2$Status))
+table(SigSpeciesIUCN2$Status)
 
 # Question 3: Are species that are increasing/decreasing have different Net ESS on their N2000 sites
 boxplot(SigSpeciesIUCN2$NetESS~SigSpeciesIUCN2$Status ,ylab="Net ESS")
@@ -470,3 +472,52 @@ kruskal.test((SigSpeciesIUCN2$NetESS~SigSpeciesIUCN2$Status))
 # Data for map
 MikaOutput<-ServiceBySite[,c(1:44,50,52)]
 write.table(MikaOutput,"MikaOutput.txt")
+
+###############################################################
+# Find frequency distribution of dominance
+###############################################################
+
+# find cumulative distribution of habitat percentage cover
+par(mfrow=c(1,1))
+hist(subset(HABITATCLASS$PERCENTAGECOVER,HABITATCLASS$PERCENTAGECOVER>=50))
+plot(density(subset(HABITATCLASS$PERCENTAGECOVER,HABITATCLASS$PERCENTAGECOVER>=50)))
+
+###############################################################
+# Cooccurrence of ESS
+###############################################################
+install.packages("cooccur")
+library(cooccur)
+
+par(mfrow=c(2,2))
+
+ServiceBySiteNoZeroPOS<-ServiceBySite[rowSums(ServiceBySite[,c(1:11)])>0,c(1:11)]
+ServiceBySiteNoZeroNEG<-ServiceBySite[rowSums(ServiceBySite[,c(12:22)])>0,c(12:22)]
+ServiceBySiteNoZeroBOTH<-ServiceBySite[rowSums(ServiceBySite[,c(23:33)])>0,c(23:33)]
+
+ServiceBySiteNoZeroANY<-matrix(nrow=nrow(ServiceBySite),ncol=11)
+for(x in 1:nrow(ServiceBySite)){
+  for(y in 1:11){
+    if(sum(ServiceBySite[x,c(y,y+11,y+22)])>0) {ServiceBySiteNoZeroANY[x,y]<-1} else {ServiceBySiteNoZeroANY[x,y]<-0}
+  }
+}
+colnames(ServiceBySiteNoZeroANY)<-c("Crop","Fodder","Fibre","Livestock","Wildfood","Aquaculture","Water","ErosionPrevention","FlowRegulation","CarbonSequstration","Recreation")
+# Cooccurrence of positive ESS
+cooccur.ess.pos <- cooccur(mat=t(ServiceBySiteNoZeroPOS),type="spp_site",thresh=TRUE,spp_names=TRUE)
+summary(cooccur.ess.pos)
+plot(cooccur.ess.pos)
+
+# Cooccurrence of negative ESS
+cooccur.ess.neg <- cooccur(mat=t(ServiceBySiteNoZeroNEG),type="spp_site",thresh=TRUE,spp_names=TRUE)
+summary(cooccur.ess.neg)
+plot(cooccur.ess.neg)
+
+# Cooccurrence of both positive and negative ESS
+cooccur.ess.both <- cooccur(mat=t(ServiceBySiteNoZeroBOTH),type="spp_site",thresh=TRUE,spp_names=TRUE)
+summary(cooccur.ess.both)
+plot(cooccur.ess.both)
+
+# Cooccurrence of any ESS
+cooccur.ess.any <- cooccur(mat=t(ServiceBySiteNoZeroANY),type="spp_site",thresh=TRUE,spp_names=TRUE)
+summary(cooccur.ess.any)
+plot(cooccur.ess.any)
+pair.attributes(cooccur.ess.any)

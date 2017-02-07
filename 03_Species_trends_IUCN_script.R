@@ -32,10 +32,9 @@ N2000SiteCodes<-N2000Sites$SITECODE
 N2000Species<-read.csv("SPECIES.csv",header=TRUE)
 
 # Use only those species that have a high proportion (>15%) of their national population in a site
-SigSpecies<-subset(N2000Species$SPECIESNAME,N2000Species$POPULATION=="A")
+SigSpecies<-subset(N2000Species,N2000Species$POPULATION%in%c("A","B","C"))
 
 # Use only birds
-BirdFamilies<-read.table(paste(path2temp,"BirdFamilies.txt",sep=""),header=TRUE)
 SigSpecies<-subset(SigSpecies,SigSpecies$SPGROUP=="Birds")
 
 # Create character vectors into which to extract IUCN data
