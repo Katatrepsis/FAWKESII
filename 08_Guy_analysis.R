@@ -10,14 +10,6 @@
 ############################################################################
 
 ############################################################################
-### To do:
-### 
-###  [CH] Still need to do the "dominant habitat" analysis
-###  [CH] Attempt the rose diagrams that Guy suggested
-### 
-############################################################################
-
-############################################################################
 ### 08.1 N2000Impact data frame
 ###
 ### Create N2000Impact data frame as a base for further data analysis
@@ -108,14 +100,14 @@ N2000Impact<-subset(N2000Impact,N2000Impact$SITE_TYPE!="B")
 ############################################################################
 ### 08.3 Associations of services
 ###
-### Simplere here - just link Guy's mapping
+### Simpler here - just link Guy's mapping
 ############################################################################
 
 # Bind Guy's mapping to the threats table
 N2000Impact<-cbind(N2000Impact,GuyMappingData[match(N2000Impact$IMPACTCODE,GuyMappingData$ACT_Code),])
 
 # Create a list of services based on Guy's mapping 
-ServiceList<-names(GuyMappingData[,c(2:12)])
+ServiceList<-names(GuyMappingData[,c(3:13)])
 
 ServiceBySite<-matrix(ncol=length(ServiceList)*4,nrow=length(unique(N2000Impact$SITECODE)))
 rownames(ServiceBySite)<-unique(N2000Impact$SITECODE)
@@ -130,9 +122,9 @@ for(x in 1:nrow(ServiceBySite)){
   SiteServices<-subset(N2000Impact,N2000Impact$SITECODE==rownames(ServiceBySite)[x])
   # For each service group (defined by Guy), sum the number of times it was positive or negative
   for(y in 1:length(ServiceList)){
-    if(nrow(subset(SiteServices,SiteServices[,9+y]=="x" & SiteServices$IMPACT_TYPE=="P"))>0) {ServiceBySite[x,y] <- 1} else {ServiceBySite[x,y] <- 0}
-    if(nrow(subset(SiteServices,SiteServices[,9+y]=="x" & SiteServices$IMPACT_TYPE=="N"))>0) {ServiceBySite[x,y+11] <- 1} else {ServiceBySite[x,y+11] <- 0}
-    if("P"%in%subset(SiteServices,SiteServices[,9+y]=="x")$IMPACT_TYPE & "N"%in%subset(SiteServices,SiteServices[,9+y]=="x")$IMPACT_TYPE) {ServiceBySite[x,y+22]<-1} else {ServiceBySite[x,y+22]<-0}
+    if(nrow(subset(SiteServices,SiteServices[,10+y]=="x" & SiteServices$IMPACT_TYPE=="P"))>0) {ServiceBySite[x,y] <- 1} else {ServiceBySite[x,y] <- 0}
+    if(nrow(subset(SiteServices,SiteServices[,10+y]=="x" & SiteServices$IMPACT_TYPE=="N"))>0) {ServiceBySite[x,y+11] <- 1} else {ServiceBySite[x,y+11] <- 0}
+    if("P"%in%subset(SiteServices,SiteServices[,10+y]=="x")$IMPACT_TYPE & "N"%in%subset(SiteServices,SiteServices[,10+y]=="x")$IMPACT_TYPE) {ServiceBySite[x,y+22]<-1;ServiceBySite[x,y] <- 0;ServiceBySite[x,y+11] <- 0} else {ServiceBySite[x,y+22]<-0}
     ServiceBySite[x,y+33]<-ServiceBySite[x,y]-ServiceBySite[x,y+11]
   }
   # Timer to track progress of loop
@@ -211,7 +203,7 @@ HABITATCLASS$PERCENTAGECOVER<-as.numeric(as.vector(HABITATCLASS$PERCENTAGECOVER)
 # Extract a subset where the % cover is >=50%
 HABITATCLASS<-subset(HABITATCLASS,HABITATCLASS$PERCENTAGECOVER>=50)
 # Add that dominant habitat to the main table
-ServiceBySite<-cbind(ServiceBySite,DomHab=HABITATCLASS$HABITATCODE[match(rownames(ServiceBySite),HABITATCLASS$SITECODE)])
+ServiceBySite<-cbind(ServiceBySite,DomHab=HABITATCLASS$HABITATCODE[match(rownames(ServiceBySite),HABITATCLASS$ï..SITECODE)])
 
 # Subset the data to just include those sites with a dominant class
 DomHabData<-subset(ServiceBySite,ServiceBySite$DomHab%in%names(which(table(ServiceBySite$DomHab)>30)))
@@ -327,6 +319,27 @@ barplot(t(as.matrix(N17_ESS)),main="N17: Conif wood",names.arg=Services,horiz=TR
 barplot(t(as.matrix(N19_ESS)),main="N19: Mixed wood",names.arg=Services,horiz=TRUE,las=1)
 barplot(t(as.matrix(N23_ESS)),main="N23: Other land",names.arg=Services,horiz=TRUE,las=1)
 
+# Now we plot the other way around: bar charts for each ESS across the different core habitats
+AllESS<-as.data.frame(rbind(N01_ESS,N02_ESS,N05_ESS,N06_ESS,N07_ESS,N08_ESS,N10_ESS,N12_ESS,N14_ESS,N15_ESS,N16_ESS,N17_ESS,N19_ESS,N23_ESS))
+AllESS$ESS<-rep(Services,14)
+Habitats<-c("N01","N02","N05","N06","N07","N08","N10","N12","N14","N15","N16","N17","N19","N23")
+AllESS$Habitat<-rep(Habitats,each=11)
+AllESS<-AllESS[,c(1,3,2,4,5)]
+
+par(mfrow=c(3,4))
+barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Crop"))),main="Crop",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
+barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Fodder"))),main="Fodder",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
+barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Fibre"))),main="Fibre",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
+barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Livestock"))),main="Livestock",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
+barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Wild food"))),main="Wild food",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
+barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Aquaculture"))),main="Aquaculture",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
+barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Water"))),main="Water",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
+barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Erosion"))),main="Erosion",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
+barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Flow"))),main="Flow",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
+barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Carbon seq"))),main="Carbon seq",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
+barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Recreation"))),main="Recreation",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
+
+
 ############################################################################
 ### Bird and IUCN conservation by net ESS
 ############################################################################
@@ -373,6 +386,7 @@ arrows(SummaryBirdData[,1],SummaryBirdData[,2],SummaryBirdData[,1],SummaryBirdDa
 arrows(SummaryBirdData[,1],SummaryBirdData[,2],SummaryBirdData[,1],SummaryBirdData[,2]-SummaryBirdData[,3],length=0)
 text(SummaryBirdData[,1],SummaryBirdData[,2]+SummaryBirdData[,3]+0.05,labels=SummaryBirdData[,4])
 cor.test(NetESS,BirdIndex,method="spearman")
+cor.test(SummaryBirdData[,2],SummaryBirdData[,1],method="pearson")
 abline(lm(SummaryBirdData[,2]~SummaryBirdData[,1],weights=SummaryBirdData[,4]))
 
 SummaryIUCNData<-matrix(ncol=4,nrow=13)
@@ -388,6 +402,122 @@ arrows(SummaryIUCNData[,1],SummaryIUCNData[,2],SummaryIUCNData[,1],SummaryIUCNDa
 arrows(SummaryIUCNData[,1],SummaryIUCNData[,2],SummaryIUCNData[,1],SummaryIUCNData[,2]-SummaryIUCNData[,3],length=0)
 text(SummaryIUCNData[,1],SummaryIUCNData[,2]+SummaryIUCNData[,3]+0.05,labels=SummaryIUCNData[,4])
 cor.test(NetESS,IUCNIndex,method="spearman")
+cor.test(SummaryIUCNData[,2],SummaryIUCNData[,1],method="pearson")
+cor.test(SummaryIUCNData[c(1:12),2],SummaryIUCNData[c(1:12),1])
 abline(lm(SummaryIUCNData[,2]~SummaryIUCNData[,1],weights=SummaryIUCNData[,4]))
 cor.test(subset(NetESS,NetESS<4),subset(IUCNIndex,NetESS<4),method="spearman")
 abline(lm(SummaryIUCNData[c(1:12),2]~SummaryIUCNData[c(1:12),1],weights=SummaryIUCNData[c(1:12),4]),lty=2)
+
+
+############################################################################
+### Bird conservation (from N2000) and IUCN status by mean net ESS
+############################################################################
+
+# (i) the mean net ESS that each species experiences vs the mean “Bird index” score 
+# (based on the conservation status of each site)
+BirdSpeciesNames<-unique(BIRDSPECIES$SPECIESNAME)
+BirdSpeciesIndex<-numeric(length=length(BirdSpeciesNames))
+for(x in 1:length(BirdSpeciesNames)){
+  BirdSpeciesIndex[x]<-mean(subset(BIRDSPECIES$SpeciesIndex,BIRDSPECIES$SPECIESNAME==BirdSpeciesNames[x]),na.rm = TRUE)
+}
+
+BirdNetESS<-numeric(length=length(BirdSpeciesNames))
+for(x in 1:length(BirdSpeciesNames)){
+  BirdSites<-subset(BIRDSPECIES$SITECODE,BIRDSPECIES$SPECIESNAME==BirdSpeciesNames[x])
+  BirdNetESS[x]<-mean(subset(ServiceBySite$NetESS,rownames(ServiceBySite)%in%BirdSites),na.rm=TRUE)
+}
+
+plot(BirdSpeciesIndex,BirdNetESS)
+abline(lm(BirdNetESS~BirdSpeciesIndex))
+cor.test(BirdSpeciesIndex,BirdNetESS,method="spearman")
+
+
+# (ii) the IUCN classification for each species (increasing/decreasing/stable as 
+# well as VU, EN, etc) vs mean net ESS
+# First, take the data from above
+BirdSpeciesOutput<-data.frame(BirdSpecies=BirdSpeciesNames,ConservationIndex=BirdSpeciesIndex,
+                              NetESS=BirdNetESS)
+# Next, find the species from the IUCN table which have >15% of their national pop in N2000 site
+SigSpeciesIUCN<-statusTable[na.omit(match(BirdSpeciesNames,statusTable[,1])),c(1,3,5)]
+
+# Now match the net ESS, bird index, and IUCN ratings for these species
+N2000ESSdata<-BirdSpeciesOutput[na.omit(match(SigSpeciesIUCN[,1],BirdSpeciesOutput[,1])),c(1:3)]
+
+# Bind together
+SigSpeciesIUCN2<-cbind(SigSpeciesIUCN,N2000ESSdata)
+
+# Question 1: Do species that are increasing/decreasing have different N2000 conservation indices?
+par(mfrow=c(1,2),mar=c(5,4,4,2)+0.1)
+boxplot(SigSpeciesIUCN2$ConservationIndex~SigSpeciesIUCN2$Population, ylab="Conservation index")
+kruskal.test((SigSpeciesIUCN2$ConservationIndex~SigSpeciesIUCN2$Population))
+table(SigSpeciesIUCN2$Population)
+
+# Question 2: Are species that are increasing/decreasing have different Net ESS on their N2000 sites
+boxplot(SigSpeciesIUCN2$NetESS~SigSpeciesIUCN2$Population,ylab="Net ESS")
+kruskal.test((SigSpeciesIUCN2$NetESS~SigSpeciesIUCN2$Population))
+
+# Question 3: Are species that are increasing/decreasing have different Net ESS on their N2000 sites
+boxplot(SigSpeciesIUCN2$ConservationIndex~SigSpeciesIUCN2$Status, ylab="Conservation index")
+kruskal.test((SigSpeciesIUCN2$ConservationIndex~SigSpeciesIUCN2$Status))
+table(SigSpeciesIUCN2$Status)
+
+# Question 3: Are species that are increasing/decreasing have different Net ESS on their N2000 sites
+boxplot(SigSpeciesIUCN2$NetESS~SigSpeciesIUCN2$Status ,ylab="Net ESS")
+kruskal.test((SigSpeciesIUCN2$NetESS~SigSpeciesIUCN2$Status))
+
+###############################################################
+# Other miscellaneous data
+###############################################################
+
+# Data for map
+MikaOutput<-ServiceBySite[,c(1:44,50,52)]
+write.table(MikaOutput,"MikaOutput.txt")
+
+###############################################################
+# Find frequency distribution of dominance
+###############################################################
+
+# find cumulative distribution of habitat percentage cover
+par(mfrow=c(1,1))
+hist(subset(HABITATCLASS$PERCENTAGECOVER,HABITATCLASS$PERCENTAGECOVER>=50))
+plot(density(subset(HABITATCLASS$PERCENTAGECOVER,HABITATCLASS$PERCENTAGECOVER>=50)))
+
+###############################################################
+# Cooccurrence of ESS
+###############################################################
+install.packages("cooccur")
+library(cooccur)
+
+par(mfrow=c(2,2))
+
+ServiceBySiteNoZeroPOS<-ServiceBySite[rowSums(ServiceBySite[,c(1:11)])>0,c(1:11)]
+ServiceBySiteNoZeroNEG<-ServiceBySite[rowSums(ServiceBySite[,c(12:22)])>0,c(12:22)]
+ServiceBySiteNoZeroBOTH<-ServiceBySite[rowSums(ServiceBySite[,c(23:33)])>0,c(23:33)]
+
+ServiceBySiteNoZeroANY<-matrix(nrow=nrow(ServiceBySite),ncol=11)
+for(x in 1:nrow(ServiceBySite)){
+  for(y in 1:11){
+    if(sum(ServiceBySite[x,c(y,y+11,y+22)])>0) {ServiceBySiteNoZeroANY[x,y]<-1} else {ServiceBySiteNoZeroANY[x,y]<-0}
+  }
+}
+colnames(ServiceBySiteNoZeroANY)<-c("Crop","Fodder","Fibre","Livestock","Wildfood","Aquaculture","Water","ErosionPrevention","FlowRegulation","CarbonSequstration","Recreation")
+# Cooccurrence of positive ESS
+cooccur.ess.pos <- cooccur(mat=t(ServiceBySiteNoZeroPOS),type="spp_site",thresh=TRUE,spp_names=TRUE)
+summary(cooccur.ess.pos)
+plot(cooccur.ess.pos)
+
+# Cooccurrence of negative ESS
+cooccur.ess.neg <- cooccur(mat=t(ServiceBySiteNoZeroNEG),type="spp_site",thresh=TRUE,spp_names=TRUE)
+summary(cooccur.ess.neg)
+plot(cooccur.ess.neg)
+
+# Cooccurrence of both positive and negative ESS
+cooccur.ess.both <- cooccur(mat=t(ServiceBySiteNoZeroBOTH),type="spp_site",thresh=TRUE,spp_names=TRUE)
+summary(cooccur.ess.both)
+plot(cooccur.ess.both)
+
+# Cooccurrence of any ESS
+cooccur.ess.any <- cooccur(mat=t(ServiceBySiteNoZeroANY),type="spp_site",thresh=TRUE,spp_names=TRUE)
+summary(cooccur.ess.any)
+plot(cooccur.ess.any)
+pair.attributes(cooccur.ess.any)
