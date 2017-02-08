@@ -24,9 +24,9 @@ needed_libs <- c("devtools",# needed for library googlesheets
                  "SnowballC", # for text mining
                  "XLConnect", # for reading in data from online Excel files (pressures data)
                  "igraph", # for network diagrams
-                 "cooccur", # for associations between stressors and services
                  "treemap", # for visualising the threats and services
-                 "cooccur" # for calculating co-occurrence statistics for services
+                 "cooccur", # for calculating co-occurrence statistics for services
+                 "ordinal" # for multinomial modelling
 )
 usePackage <- function(p) {
   if (!is.element(p, installed.packages()[,1]))

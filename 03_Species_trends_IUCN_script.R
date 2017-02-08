@@ -26,51 +26,24 @@ speciesTable<-read.csv("DIRECTIVESPECIES.csv")
 
 # Find list of unique N2000 sites
 N2000Sites<-read.csv("NATURA2000SITES.csv",header=TRUE)
-N2000SiteCodes<-N2000Sites$SITECODE
 N2000SPASiteCodes<-subset(N2000Sites$SITECODE,N2000Sites$SITETYPE=="A"|N2000Sites$SITETYPE=="C")
 
 # Load big list of species with presence at each site
 N2000Species<-read.csv("SPECIES.csv",header=TRUE)
 
-SigSpecies<-subset(N2000Species$SPECIESNAME,N2000Species$POPULATION=="A" & N2000Species$SPGROUP=="Birds")
-
-length(unique(N2000Species$SITECODE,N2000Species$POPULATION=="A" & N2000Species$SPGROUP=="Birds"))
-
-
-SigSpecies<-subset(N2000Species,N2000Species$POPULATION=="A")
-
-# Use only birds
-SigSpecies<-subset(SigSpecies,SigSpecies$SPGROUP=="Birds")
-length(unique(SigSpecies$SPECIESNAME))
-
-# Number of species in N2000 dataset
-length(unique(N2000Species$SPECIESNAME))
-
-# Number of bird species in N2000 dataset
-length(unique(subset(N2000Species$SPECIESNAME,N2000Species$SPGROUP=="Birds")))
-
-# Number of bird species in N2000 dataset for which Population is rated as "A"
-length(unique(subset(N2000Species$SPECIESNAME,N2000Species$SPGROUP=="Birds" & N2000Species$POPULATION=="A")))
-
-# Use only those species that are not just vagrants (not "D")
-SigSpecies<-subset(N2000Species,N2000Species$SPGROUP=="Birds" & N2000Species$POPULATION=="A")
-
-# Use only birds
-SigSpecies<-subset(SigSpecies,SigSpecies$SPGROUP=="Birds")
-
-# Extract list of unique species names (n=565)
-SigSpeciesNames<-unique(SigSpecies$SPECIESNAME)
+# Use only birds for which at least one SPA has a GLOBAL importance of at least "C" ("significant")
+BirdSpecies<-unique(subset(N2000Species$SPECIESNAME,N2000Species$SPGROUP=="Birds" & N2000Species$GLOBAL %in% c("A","B","C")))
 
 # Create character vectors into which to extract IUCN data
 Species<-Family<-Status<-Criteria<-Population<-DescriptionYear<-character()
 
 ptm <- proc.time() # 18.25 mins
 # Loop through each Natura 2000 species to extract data and save to the vector
-for(x in 1:length(SigSpeciesNames)){
+for(x in 1:length(BirdSpecies)){
   
   # Create a temporary object to hold the data from each web request
   #spData <- try(lets.iucn(speciesTable$SPECIESNAME[x]))
-  spData <- tryCatch(lets.iucn(SigSpeciesNames[x]), error=function(e) "Not available")
+  spData <- tryCatch(lets.iucn(BirdSpecies[x]), error=function(e) "Not available")
   if(spData=="Not available") {Species[x]<-Family[x]<-Status[x]<-Criteria[x]<-Population[x]<-DescriptionYear[x]<-"Not available";next}
   # Extract data from that object into the vectors
   Species[x]<-as.character(spData[1,1])
@@ -86,11 +59,11 @@ for(x in 1:length(SigSpeciesNames)){
   
 }
 proc.time() - ptm
-statusTable<-cbind(Species,Family,Status,Criteria,Population,DescriptionYear)
-table(Status)
-table(Population)
-write.table(statusTable,"IUCNOutput.txt")
 
+# Combine output into a single table
+statusTable<-cbind(Species,Family,Status,Criteria,Population,DescriptionYear)
+# Write table to file for convenience
+write.table(statusTable,"IUCNOutput.txt")
 
 # Now rotate through N2000 sites to establish (I) the number of species listed in directives, (II) the
 # number of those species that are increasing, declining, or stable.
@@ -100,11 +73,12 @@ NumberDirectiveSp<-IncreasingSp<-DecreasingSp<-StableSp<-UnknownSp<-integer()
 
 # Loop through each Natura 2000 site to extract data and save to the vector
 ptm <- proc.time() # 2 mins
+#N2000SPASiteCodes<-factor(N2000SPASiteCodes,levels=levels(N2000Species$SITECODE))
 for(x in 1:length(N2000SPASiteCodes)){
-  
   # Create a temporary object to hold the data from each web request
-  spData <- subset(N2000Species,N2000Species$SITECODE %in% N2000SPASiteCodes[x])
+  spData <- subset(N2000Species,N2000Species$SITECODE==N2000SPASiteCodes[x] & N2000Species$GLOBAL %in% c("A","B","C"))
   spTrends<-subset(statusTable,as.vector(statusTable[,1]) %in% as.vector(spData$SPECIESNAME))
+  
   # Extract data from that object into the vectors
   NumberDirectiveSp[x]<-nrow(spTrends)
   IncreasingSp[x]<-nrow(subset(spTrends,spTrends[,5]=="Increasing"))
@@ -112,15 +86,14 @@ for(x in 1:length(N2000SPASiteCodes)){
   StableSp[x]<-nrow(subset(spTrends,spTrends[,5]=="Stable"))
   UnknownSp[x]<-nrow(subset(spTrends,spTrends[,5]=="Unknown"))
   
-  # Extra bit of code to report the loop (for sanity!), print loop on multiples of 10
+  # Extra bit of code to report the loop, print loop on multiples of 100
   if(x%%100==0) {print(x)}
-  #print(x)
   flush.console()
-  
 }
+
 proc.time() - ptm
 
+# Combine output into a single table
 SiteTrends<-data.frame(Site=N2000SPASiteCodes,SpeciesN=NumberDirectiveSp,Inc=IncreasingSp,Dec=DecreasingSp,Stable=StableSp,Unknown=UnknownSp)
-head(SiteTrends)
-plot(SiteTrends[,3],SiteTrends[,4])
+# Write table to file for convenience
 write.table(SiteTrends,"SiteTrends.txt")

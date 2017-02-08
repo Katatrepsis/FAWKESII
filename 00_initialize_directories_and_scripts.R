@@ -77,8 +77,8 @@ path2wd <- set.list[[2]]
 source(path2wd %+% "01_load_libraries_and_functions.R")
 source(path2wd %+% "02_load_data.R")
 source(path2wd %+% "03_Species_trends_IUCN_script.R") # works but takes very long time
-source(path2wd %+% "04_Natura2000_Pressures.R")
-source(path2wd %+% "05_Text_mining_Natura2000.R")
+#source(path2wd %+% "04_Natura2000_Pressures.R")
+#source(path2wd %+% "05_Text_mining_Natura2000.R")
 
 ############################################################################
 ###  DATA ANALYSIS

@@ -58,7 +58,6 @@ str(GuyMappingData)
 GuyMappingData$ACT_Code <- as.factor(GuyMappingData$ACT_Code)
 
 
-
 ############################################################################
 ### 02.2. Get management plans for text analysis 
 ############################################################################

@@ -21,9 +21,7 @@ setwd(path2temp %+% "/")
 # Load data
 N2000Impact<-read.csv("IMPACT.csv")
 
-
 #### DATA CLEANING ####
-
 # Change column name from "ï..SITECODE" to "SITECODE"
 colnames(N2000Impact)[1] <- "SITECODE"
 
@@ -86,13 +84,11 @@ N2000Sites <- read.csv("NATURA2000SITES.csv")
 N2000Sites[,4] <- as.character(N2000Sites[,4])
 N2000Impact$SITE_TYPE <- NA
 
-# Add site type to N2000Impact
-# Running time 117 seconds
-#ptm2 <- proc.time()
+# Add site type to N2000Impact (running time 117 seconds)
 for(x in 1:nrow(N2000Impact)){
   N2000Impact$SITE_TYPE[x] <- N2000Sites[match(N2000Impact$SITECODE[x],N2000Sites$SITECODE),4]
 }
-#proc.time() - ptm2
+
 # Now subset to exclude SITE_TYPE="B"
 N2000Impact<-subset(N2000Impact,N2000Impact$SITE_TYPE!="B")
 
@@ -113,7 +109,7 @@ ServiceBySite<-matrix(ncol=length(ServiceList)*4,nrow=length(unique(N2000Impact$
 rownames(ServiceBySite)<-unique(N2000Impact$SITECODE)
 colnames(ServiceBySite)<-c(paste(ServiceList,"POS"),paste(ServiceList,"NEG"),paste(ServiceList,"BOTH"),paste(ServiceList,"NET"))
 
-# Run through Guy's mapping and tally the positive (in the first 11 columns) and negative (second 11 columns)
+# Run through Guy's mapping and tally the positive (in the first 9 columns) and negative (second 9 columns)
 # ESS associated with each site. Then calculate the difference between the two to give a net score for each
 # ESS on each site
 ptm <- proc.time()
@@ -122,9 +118,9 @@ for(x in 1:nrow(ServiceBySite)){
   SiteServices<-subset(N2000Impact,N2000Impact$SITECODE==rownames(ServiceBySite)[x])
   # For each service group (defined by Guy), sum the number of times it was positive or negative
   for(y in 1:length(ServiceList)){
-    if(nrow(subset(SiteServices,SiteServices[,10+y]=="x" & SiteServices$IMPACT_TYPE=="P"))>0) {ServiceBySite[x,y] <- 1} else {ServiceBySite[x,y] <- 0}
-    if(nrow(subset(SiteServices,SiteServices[,10+y]=="x" & SiteServices$IMPACT_TYPE=="N"))>0) {ServiceBySite[x,y+9] <- 1} else {ServiceBySite[x,y+9] <- 0}
-    if("P"%in%subset(SiteServices,SiteServices[,10+y]=="x")$IMPACT_TYPE & "N"%in%subset(SiteServices,SiteServices[,8+y]=="x")$IMPACT_TYPE) {ServiceBySite[x,y+18]<-1;ServiceBySite[x,y] <- 0;ServiceBySite[x,y+9] <- 0} else {ServiceBySite[x,y+18]<-0}
+    if(nrow(subset(SiteServices,SiteServices[,10+y]=="c" & SiteServices$IMPACT_TYPE=="P"))>0) {ServiceBySite[x,y] <- 1} else {ServiceBySite[x,y] <- 0}
+    if(nrow(subset(SiteServices,SiteServices[,10+y]=="c" & SiteServices$IMPACT_TYPE=="N"))>0) {ServiceBySite[x,y+9] <- 1} else {ServiceBySite[x,y+9] <- 0}
+    if("P"%in%subset(SiteServices,SiteServices[,10+y]=="c")$IMPACT_TYPE & "N"%in%subset(SiteServices,SiteServices[,8+y]=="c")$IMPACT_TYPE) {ServiceBySite[x,y+18]<-1;ServiceBySite[x,y] <- 0;ServiceBySite[x,y+9] <- 0} else {ServiceBySite[x,y+18]<-0}
     ServiceBySite[x,y+27]<-ServiceBySite[x,y]-ServiceBySite[x,y+9]
   }
   # Timer to track progress of loop
@@ -140,7 +136,6 @@ ServiceBySite<-cbind(ServiceBySite,NetESS,NetESSwt)
 # Add Bioregion
 BIOREGION<-read.csv("BIOREGION.csv")
 ServiceBySite<-data.frame(ServiceBySite,Biogeog=as.factor(BIOREGION[match(rownames(ServiceBySite),BIOREGION$SITECODE),2]))
-
 
 
 ############################################################################
@@ -195,6 +190,52 @@ colnames(Alpine_BarData) <- c("POS","BOTH","NEG")
 barplot(t(Alpine_BarData/rowSums(Alpine_BarData)),las=2, legend=F, main="(F) Alpine SPAs",names.arg=ESLabels)
 
 # 2: STACKED BARS SHOWING ABSOLUTE NUMBERS
+
+par(mfrow=c(3,2))
+
+# Figure 2A (all SPAs)
+All_BarData<-cbind(colSums(ServiceBySite[,c(1:9)]),colSums(ServiceBySite[,c(19:27)]),colSums(ServiceBySite[,c(10:18)]))
+rownames(All_BarData) <- ServiceList
+colnames(All_BarData) <- c("POS","BOTH","NEG")
+barplot(t(All_BarData),las=2, legend=F, main="(A) All SPAs",names.arg=ESLabels)
+
+# Figure 2B (Atlantic)
+Atlantic_ServiceBySite<-subset(ServiceBySite,ServiceBySite$Biogeog=="Atlantic")
+Atlantic_BarData<-cbind(colSums(Atlantic_ServiceBySite[,c(1:9)]),colSums(Atlantic_ServiceBySite[,c(19:27)]),colSums(Atlantic_ServiceBySite[,c(10:18)]))
+rownames(Atlantic_BarData) <- ServiceList
+colnames(Atlantic_BarData) <- c("POS","BOTH","NEG")
+barplot(t(Atlantic_BarData),las=2, legend=F, main="(B) Atlantic SPAs",names.arg=ESLabels)
+
+# Figure 2C (Continental)
+Continental_ServiceBySite<-subset(ServiceBySite,ServiceBySite$Biogeog=="Continental")
+Continental_BarData<-cbind(colSums(Continental_ServiceBySite[,c(1:9)]),colSums(Continental_ServiceBySite[,c(19:27)]),colSums(Continental_ServiceBySite[,c(10:18)]))
+rownames(Continental_BarData) <- ServiceList
+colnames(Continental_BarData) <- c("POS","BOTH","NEG")
+barplot(t(Continental_BarData),las=2, legend=F, main="(C) Continental SPAs",names.arg=ESLabels)
+
+# Figure 2D (Mediterranean)
+Mediterranean_ServiceBySite<-subset(ServiceBySite,ServiceBySite$Biogeog=="Mediterranean")
+Mediterranean_BarData<-cbind(colSums(Mediterranean_ServiceBySite[,c(1:9)]),colSums(Mediterranean_ServiceBySite[,c(19:27)]),colSums(Mediterranean_ServiceBySite[,c(10:18)]))
+rownames(Mediterranean_BarData) <- ServiceList
+colnames(Mediterranean_BarData) <- c("POS","BOTH","NEG")
+barplot(t(Mediterranean_BarData),las=2, legend=F, main="(D) Mediterranean SPAs",names.arg=ESLabels)
+
+# Figure 2E (Boreal)
+Boreal_ServiceBySite<-subset(ServiceBySite,ServiceBySite$Biogeog=="Boreal")
+Boreal_BarData<-cbind(colSums(Boreal_ServiceBySite[,c(1:9)]),colSums(Boreal_ServiceBySite[,c(19:27)]),colSums(Boreal_ServiceBySite[,c(10:18)]))
+rownames(Boreal_BarData) <- ServiceList
+colnames(Boreal_BarData) <- c("POS","BOTH","NEG")
+barplot(t(Boreal_BarData),las=2, legend=F, main="(E) Boreal SPAs",names.arg=ESLabels)
+
+# Figure 2F (Alpine)
+Alpine_ServiceBySite<-subset(ServiceBySite,ServiceBySite$Biogeog=="Alpine")
+Alpine_BarData<-cbind(colSums(Alpine_ServiceBySite[,c(1:9)]),colSums(Alpine_ServiceBySite[,c(19:27)]),colSums(Alpine_ServiceBySite[,c(10:18)]))
+rownames(Alpine_BarData) <- ServiceList
+colnames(Alpine_BarData) <- c("POS","BOTH","NEG")
+barplot(t(Alpine_BarData),las=2, legend=F, main="(F) Alpine SPAs",names.arg=ESLabels)
+
+
+# 3: STACKED BARS SHOWING Percentage of total SPAs
 
 par(mfrow=c(3,2))
 
@@ -394,7 +435,7 @@ ConvertToNumber<-data.frame(Letters=c("A","B","C"),Numbers=c(2,1,0))
 SpeciesIndex<-ConvertToNumber[match(SPECIES$CONSERVATION,ConvertToNumber[,1]),2]
 SPECIES$SpeciesIndex<-SpeciesIndex
 
-BIRDSPECIES<-subset(SPECIES,SPECIES$SPGROUP=="Birds")
+BIRDSPECIES<-subset(SPECIES,SPECIES$SPGROUP=="Birds" & SPECIES$GLOBAL %in% c("A","B","C"))
 
 # Add bird scores to the sites
 IUCNIndex<-BirdIndex<-IUCNNumber<-BirdNumber<-numeric(length=nrow(ServiceBySite))
@@ -408,30 +449,27 @@ for(x in 1:nrow(ServiceBySite)){
                      subset(SiteTrends$Stable,SiteTrends$Site==rownames(ServiceBySite)[x]),
                      subset(SiteTrends$Dec,SiteTrends$Site==rownames(ServiceBySite)[x]))
   if(x%%100==0) {print(x)}
-  #print(x)
   flush.console()
 }
 
 par(mfrow=c(2,2),mar=c(5,4,4,2))
-plot(NetESSwt,BirdIndex,xlab="NetESSwt",ylab="Conservation index")
+plot(NetESS,BirdIndex,xlab="NetESS",ylab="Conservation index")
 mtext("A",cex=2,at=3)
-plot(NetESSwt,IUCNIndex,xlab="NetESSwt",ylab="IUCN trends index")
+plot(NetESS,IUCNIndex,xlab="NetESS",ylab="IUCN trends index")
 mtext("B",cex=2,at=3)
 
 SummaryBirdData<-matrix(ncol=4,nrow=13)
-colnames(SummaryBirdData)<-c("NetESSwt","MeanBirdStatus","SE","N")
+colnames(SummaryBirdData)<-c("NetESS","MeanBirdStatus","SE","N")
 for(x in 1:13){
   SummaryBirdData[x,1]<-x-9
-  SummaryBirdData[x,2]<-mean(subset(BirdIndex,NetESSwt==x-9),na.rm=TRUE)
-  SummaryBirdData[x,3]<-sd(subset(BirdIndex,NetESSwt==x-9),na.rm=TRUE)/sqrt(length(subset(BirdIndex,NetESSwt==x-9)))
-  SummaryBirdData[x,4]<-length(subset(BirdIndex,NetESSwt==x-9))
+  SummaryBirdData[x,2]<-mean(subset(BirdIndex,NetESS==x-9),na.rm=TRUE)
+  SummaryBirdData[x,3]<-sd(subset(BirdIndex,NetESS==x-9),na.rm=TRUE)/sqrt(length(subset(BirdIndex,NetESS==x-9)))
+  SummaryBirdData[x,4]<-length(subset(BirdIndex,NetESS==x-9))
 }
 plot(SummaryBirdData[,1],SummaryBirdData[,2],ylim=c(0.7,1.7),ylab="Conservation index",xlab="Net ESS")
 arrows(SummaryBirdData[,1],SummaryBirdData[,2],SummaryBirdData[,1],SummaryBirdData[,2]+SummaryBirdData[,3],length=0)
 arrows(SummaryBirdData[,1],SummaryBirdData[,2],SummaryBirdData[,1],SummaryBirdData[,2]-SummaryBirdData[,3],length=0)
-#text(SummaryBirdData[,1],SummaryBirdData[,2]+SummaryBirdData[,3]+0.05,labels=SummaryBirdData[,4])
 cor.test(NetESS,BirdIndex,method="spearman")
-cor.test(SummaryBirdData[,2],SummaryBirdData[,1],method="pearson")
 abline(lm(SummaryBirdData[,2]~SummaryBirdData[,1],weights=SummaryBirdData[,4]))
 mtext("C",cex=2,at=3)
 
@@ -439,20 +477,15 @@ SummaryIUCNData<-matrix(ncol=4,nrow=13)
 colnames(SummaryIUCNData)<-c("NetESSwt","MeanBirdStatus","SE","N")
 for(x in 1:13){
   SummaryIUCNData[x,1]<-x-9
-  SummaryIUCNData[x,2]<-mean(subset(IUCNIndex,NetESSwt==x-9),na.rm=TRUE)
-  SummaryIUCNData[x,3]<-sd(subset(IUCNIndex,NetESSwt==x-9),na.rm=TRUE)/sqrt(length(subset(IUCNIndex,NetESSwt==x-9)))
-  SummaryIUCNData[x,4]<-length(subset(IUCNIndex,NetESSwt==x-9))
+  SummaryIUCNData[x,2]<-mean(subset(IUCNIndex,NetESS==x-9),na.rm=TRUE)
+  SummaryIUCNData[x,3]<-sd(subset(IUCNIndex,NetESS==x-9),na.rm=TRUE)/sqrt(length(subset(IUCNIndex,NetESS==x-9)))
+  SummaryIUCNData[x,4]<-length(subset(IUCNIndex,NetESS==x-9))
 }
 plot(SummaryIUCNData[,1],SummaryIUCNData[,2],ylim=c(0.4,0.73),ylab="IUCN trends index",xlab="Net ESS")
 arrows(SummaryIUCNData[,1],SummaryIUCNData[,2],SummaryIUCNData[,1],SummaryIUCNData[,2]+SummaryIUCNData[,3],length=0)
 arrows(SummaryIUCNData[,1],SummaryIUCNData[,2],SummaryIUCNData[,1],SummaryIUCNData[,2]-SummaryIUCNData[,3],length=0)
-#text(SummaryIUCNData[,1],SummaryIUCNData[,2]+SummaryIUCNData[,3]+0.05,labels=SummaryIUCNData[,4])
 cor.test(NetESS,IUCNIndex,method="spearman")
-cor.test(SummaryIUCNData[,2],SummaryIUCNData[,1],method="pearson")
-cor.test(SummaryIUCNData[c(1:12),2],SummaryIUCNData[c(1:12),1])
 abline(lm(SummaryIUCNData[,2]~SummaryIUCNData[,1],weights=SummaryIUCNData[,4]))
-cor.test(subset(NetESS,NetESS<4),subset(IUCNIndex,NetESS<4),method="spearman")
-abline(lm(SummaryIUCNData[c(1:12),2]~SummaryIUCNData[c(1:12),1],weights=SummaryIUCNData[c(1:12),4]),lty=2)
 mtext("D",cex=2,at=3)
 
 ############################################################################
@@ -471,7 +504,7 @@ for(x in 1:length(BirdSpeciesNames)){
 BirdNetESS<-numeric(length=length(BirdSpeciesNames))
 for(x in 1:length(BirdSpeciesNames)){
   BirdSites<-subset(N2000Species$SITECODE,N2000Species$GLOBAL%in%c("A","B","C") & N2000Species$SPECIESNAME==BirdSpeciesNames[x])
-  BirdNetESS[x]<-mean(subset(ServiceBySite$NetESSwt,rownames(ServiceBySite)%in%BirdSites),na.rm=TRUE)
+  BirdNetESS[x]<-mean(subset(ServiceBySite$NetESS,rownames(ServiceBySite)%in%BirdSites),na.rm=TRUE)
 }
 par(mfrow=c(1,1))
 plot(BirdNetESS,BirdSpeciesIndex,xlab="Net ESS",ylab="Conservation index")
@@ -502,8 +535,6 @@ boxplot(SigSpeciesIUCN3$ConservationIndex~SigSpeciesIUCN3$Population, ylab="Cons
 mtext("A",cex=2,at=1)
 kruskal.test(SigSpeciesIUCN3$ConservationIndex~SigSpeciesIUCN3$Population)
 
-#install.packages("ordinal")
-#library(ordinal)
 test1<-clm(Population ~ ConservationIndex, data = SigSpeciesIUCN3)
 summary(test1)
 
@@ -553,8 +584,6 @@ plot(density(subset(HABITATCLASS$PERCENTAGECOVER,HABITATCLASS$PERCENTAGECOVER>=5
 ###############################################################
 # Cooccurrence of ESS
 ###############################################################
-install.packages("cooccur")
-library(cooccur)
 
 par(mfrow=c(2,2))
 
