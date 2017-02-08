@@ -49,7 +49,7 @@ MappingData<-MappingData[!(is.na(MappingData$relation) | MappingData$relation=="
 ########################################
 ### load Guy's new 2017 mapping table
 ### load mapping table
-GuyMappingData <- gs_read(threats_services_gsheet, ws = "GuyMapping2017",check.names=TRUE) #consume data from "GuyMapping2017"
+GuyMappingData <- gs_read(threats_services_gsheet, ws = "FINAL_Mapping",check.names=TRUE) #consume data from "GuyMapping2017"
 GuyMappingData<-as.data.frame(GuyMappingData) #some functions don't like the tbl.df data type
 ### check variable types 
 str(GuyMappingData)
