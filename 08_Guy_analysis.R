@@ -1,18 +1,30 @@
 ############################################################################
-### Purpose of this script module 06 is to:
+### Purpose of this script module 08 is to:
 ###
-### Replicate Guy's Excel analysis
-### ecosystem services
+### 08.1 Clean the N2000 impact data
+### 08.2 Subset the data 
+### 08.3 Associations of services
+### 08.4 Bar plots of services by biogeographical region
+### 08.5 ESS displayed by core habitat
+### 08.6 Site-centred conservation and IUCN indices
+### 08.7 Bird conservation (from N2000) and IUCN status by mean net ESS
+### 08.8 Output services for ArcGIS plotting (Figure 1)
+### 08.9 Find frequency distribution of dominance
+### 08.10 Cooccurrence analysis of ESS
+### 08.11 Co-occurrence analysis excluding ESS mapped to multiple threats
+### 08.12 Omnibus multinomial models of habitat quality and ESS
+### 08.13 Code Graveyard
 ### 
 ### Authors: CH, AC, MB, AK
 ###
-### Run skript modules 00, 01, 02 before
+### Run skript modules 00, 01, 02, 03 before
 ############################################################################
 
 ############################################################################
-### 08.1 N2000Impact data frame
+### 08.1 Clean the N2000 impact data
 ###
-### Create N2000Impact data frame as a base for further data analysis
+### Create N2000Impact data frame as a base for further data analysis, and
+### fix a large number of typos and missing data
 ############################################################################
 
 # set wd to path2temp where files have been downloaded and extracted
@@ -68,11 +80,11 @@ N2000Impact$IMPACTCODE<-as.factor(N2000Impact$IMPACTCODE)
 
 
 ###############################################
-# 08.2 Subsetting data 
-# Just working with subset of N2000Impact with the following characteristics:
-#     (i) SITE_TYPE = A or C (SPA sites only)
-#     (ii) INTENSITY = MEDIUM or HIGH
-#     (iii) OCCURRENCE = IN or BOTH
+### 08.2 Subsetting data 
+### Just working with subset of N2000Impact with the following characteristics:
+###     (i) SITE_TYPE = A or C (SPA sites only)
+###     (ii) INTENSITY = MEDIUM or HIGH
+###     (iii) OCCURRENCE = IN or BOTH
 ###############################################
 
 # First, subset N2000Impact by intensity and occurrence
@@ -96,7 +108,8 @@ N2000Impact<-subset(N2000Impact,N2000Impact$SITE_TYPE!="B")
 ############################################################################
 ### 08.3 Associations of services
 ###
-### Simpler here - just link Guy's mapping
+### Association the threats from the N2000Impact data with the mapped
+### ecosystem services from the Google Doc
 ############################################################################
 
 # Bind Guy's mapping to the threats table
@@ -109,7 +122,7 @@ ServiceBySite<-matrix(ncol=length(ServiceList)*4,nrow=length(unique(N2000Impact$
 rownames(ServiceBySite)<-unique(N2000Impact$SITECODE)
 colnames(ServiceBySite)<-c(paste(ServiceList,"POS"),paste(ServiceList,"NEG"),paste(ServiceList,"BOTH"),paste(ServiceList,"NET"))
 
-# Run through Guy's mapping and tally the positive (in the first 9 columns) and negative (second 9 columns)
+# Run through mapping and tally the positive (in the first 9 columns) and negative (second 9 columns)
 # ESS associated with each site. Then calculate the difference between the two to give a net score for each
 # ESS on each site
 ptm <- proc.time()
@@ -139,14 +152,14 @@ ServiceBySite<-data.frame(ServiceBySite,Biogeog=as.factor(BIOREGION[match(rownam
 
 
 ############################################################################
-### 08.4 Bar plots
+### 08.4 Bar plots of services by biogeographical region
 ###
 ### Creates bar plots of types of ESS by biogeographical region
 ############################################################################
 
 # 1: STACKED BARS SHOWING PROPORTIONS
 
-par(mfrow=c(3,2))
+par(mfrow=c(3,2),mar=c(3,4,3,2))
 ESLabels<-c("CR","FD","FB","LS","WF","AQ","WA","RG","RC")
 # Figure 2A (all SPAs)
 All_BarData<-cbind(colSums(ServiceBySite[,c(1:9)]),colSums(ServiceBySite[,c(19:27)]),colSums(ServiceBySite[,c(10:18)]))
@@ -282,7 +295,7 @@ barplot(t(Alpine_BarData),las=2, legend=F, main="(F) Alpine SPAs",names.arg=ESLa
 
 
 ############################################################################
-### ESS by core habitat
+### 08.5 ESS displayed by core habitat
 ############################################################################
 
 # Load HABITATCLASS
@@ -426,7 +439,12 @@ barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Recreation"))),main="Recreation",
 
 
 ############################################################################
-### Bird and IUCN conservation by net ESS
+### 08.6 Site-centred conservation and IUCN indices
+###
+### This script takes the site as the unit of replication and calculates
+### the "conservation index" (the mean habitat quality for the community
+### of bird species living at the site) and the "IUCN index" (the mean
+### IUCN trend for the species living at the site)
 ############################################################################
 
 # Convert the A, B, C CONSERVATION code to a numeric score
@@ -452,11 +470,11 @@ for(x in 1:nrow(ServiceBySite)){
   flush.console()
 }
 
-par(mfrow=c(2,2),mar=c(5,4,4,2))
-plot(NetESS,BirdIndex,xlab="NetESS",ylab="Conservation index")
-mtext("A",cex=2,at=3)
-plot(NetESS,IUCNIndex,xlab="NetESS",ylab="IUCN trends index")
-mtext("B",cex=2,at=3)
+par(mfrow=c(1,2),mar=c(5,4,4,2))
+#plot(NetESS,BirdIndex,xlab="NetESS",ylab="Conservation index")
+#mtext("A",cex=2,at=3)
+#plot(NetESS,IUCNIndex,xlab="NetESS",ylab="IUCN trends index")
+#mtext("B",cex=2,at=3)
 
 SummaryBirdData<-matrix(ncol=4,nrow=13)
 colnames(SummaryBirdData)<-c("NetESS","MeanBirdStatus","SE","N")
@@ -466,12 +484,26 @@ for(x in 1:13){
   SummaryBirdData[x,3]<-sd(subset(BirdIndex,NetESS==x-9),na.rm=TRUE)/sqrt(length(subset(BirdIndex,NetESS==x-9)))
   SummaryBirdData[x,4]<-length(subset(BirdIndex,NetESS==x-9))
 }
-plot(SummaryBirdData[,1],SummaryBirdData[,2],ylim=c(0.7,1.7),ylab="Conservation index",xlab="Net ESS")
-arrows(SummaryBirdData[,1],SummaryBirdData[,2],SummaryBirdData[,1],SummaryBirdData[,2]+SummaryBirdData[,3],length=0)
-arrows(SummaryBirdData[,1],SummaryBirdData[,2],SummaryBirdData[,1],SummaryBirdData[,2]-SummaryBirdData[,3],length=0)
+plot(SummaryBirdData[,1],SummaryBirdData[,2],ylim=c(0.7,1.3),ylab="Conservation index",xlab="Net ESS")
+#arrows(SummaryBirdData[,1],SummaryBirdData[,2],SummaryBirdData[,1],SummaryBirdData[,2]+SummaryBirdData[,3],length=0)
+#arrows(SummaryBirdData[,1],SummaryBirdData[,2],SummaryBirdData[,1],SummaryBirdData[,2]-SummaryBirdData[,3],length=0)
 cor.test(NetESS,BirdIndex,method="spearman")
 abline(lm(SummaryBirdData[,2]~SummaryBirdData[,1],weights=SummaryBirdData[,4]))
-mtext("C",cex=2,at=3)
+text(-7,1.25,"A",cex=2)
+
+mod<-lm(BirdIndex~NetESS)
+newx <- seq(min(NetESS), max(NetESS), length.out=100)
+preds <- predict(mod, newdata = data.frame(NetESS=newx), interval = 'confidence')
+#plot(NetESS,BirdIndex, type = 'n',ylim=c(0.5,0.7))
+# add fill
+polygon(c(rev(newx), newx), c(rev(preds[ ,3]), preds[ ,2]), col = rgb(0.1,0.1,0.1,0.2), border = NA)
+# model
+abline(mod)
+# intervals
+lines(newx, preds[ ,3], lty = 'dashed', col = 'red');lines(newx, preds[ ,2], lty = 'dashed', col = 'red')
+
+
+# Net ESS versus IUCN status
 
 SummaryIUCNData<-matrix(ncol=4,nrow=13)
 colnames(SummaryIUCNData)<-c("NetESSwt","MeanBirdStatus","SE","N")
@@ -481,15 +513,32 @@ for(x in 1:13){
   SummaryIUCNData[x,3]<-sd(subset(IUCNIndex,NetESS==x-9),na.rm=TRUE)/sqrt(length(subset(IUCNIndex,NetESS==x-9)))
   SummaryIUCNData[x,4]<-length(subset(IUCNIndex,NetESS==x-9))
 }
-plot(SummaryIUCNData[,1],SummaryIUCNData[,2],ylim=c(0.4,0.73),ylab="IUCN trends index",xlab="Net ESS")
-arrows(SummaryIUCNData[,1],SummaryIUCNData[,2],SummaryIUCNData[,1],SummaryIUCNData[,2]+SummaryIUCNData[,3],length=0)
-arrows(SummaryIUCNData[,1],SummaryIUCNData[,2],SummaryIUCNData[,1],SummaryIUCNData[,2]-SummaryIUCNData[,3],length=0)
+plot(SummaryIUCNData[,1],SummaryIUCNData[,2],ylim=c(0.4,0.8),ylab="IUCN trends index",xlab="Net ESS")
+#arrows(SummaryIUCNData[,1],SummaryIUCNData[,2],SummaryIUCNData[,1],SummaryIUCNData[,2]+SummaryIUCNData[,3],length=0)
+#arrows(SummaryIUCNData[,1],SummaryIUCNData[,2],SummaryIUCNData[,1],SummaryIUCNData[,2]-SummaryIUCNData[,3],length=0)
 cor.test(NetESS,IUCNIndex,method="spearman")
 abline(lm(SummaryIUCNData[,2]~SummaryIUCNData[,1],weights=SummaryIUCNData[,4]))
-mtext("D",cex=2,at=3)
+text(-7,0.765,"B",cex=2)
+
+mod<-lm(IUCNIndex~NetESS)
+newx <- seq(min(NetESS), max(NetESS), length.out=100)
+preds <- predict(mod, newdata = data.frame(NetESS=newx), interval = 'confidence')
+#plot(NetESS,IUCNIndex, type = 'n',ylim=c(0.5,0.7))
+# add fill
+polygon(c(rev(newx), newx), c(rev(preds[ ,3]), preds[ ,2]), col = rgb(0.1,0.1,0.1,0.2), border = NA)
+# model
+abline(mod)
+# intervals
+lines(newx, preds[ ,3], lty = 'dashed', col = 'red');lines(newx, preds[ ,2], lty = 'dashed', col = 'red')
 
 ############################################################################
-### Bird conservation (from N2000) and IUCN status by mean net ESS
+### 08.7 Bird conservation (from N2000) and IUCN status by mean net ESS
+###
+### This script is similar to 08.6 but take a species-centred approach, 
+### calculating the "conservation index" (the mean habitat quality for
+### each species across all N2000 sites on which it is found) and the 
+### "Net ESS" (the mean net services for the sites on which a species
+### is found)
 ############################################################################
 
 # (i) the mean net ESS that each species experiences vs the mean “Bird index” score 
@@ -565,7 +614,7 @@ summary(test4)
 mtext("D",cex=2,at=1)
 
 ###############################################################
-# Other miscellaneous data
+### 08.8 Output services for ArcGIS plotting (Figure 1)
 ###############################################################
 
 # Data for map
@@ -573,7 +622,7 @@ MikaOutput<-ServiceBySite[,c(1:38,40)]
 write.table(MikaOutput,"MikaOutput v2.txt")
 
 ###############################################################
-# Find frequency distribution of dominance
+### 08.9 Find frequency distribution of dominance
 ###############################################################
 
 # find cumulative distribution of habitat percentage cover
@@ -582,7 +631,7 @@ hist(subset(HABITATCLASS$PERCENTAGECOVER,HABITATCLASS$PERCENTAGECOVER>=50))
 plot(density(subset(HABITATCLASS$PERCENTAGECOVER,HABITATCLASS$PERCENTAGECOVER>=50)))
 
 ###############################################################
-# Cooccurrence of ESS
+### 08.10 Cooccurrence analysis of ESS
 ###############################################################
 
 par(mfrow=c(2,2))
@@ -599,9 +648,7 @@ for(x in 1:nrow(ServiceBySite)){
 }
 colnames(ServiceBySiteNoZeroANY)<-ServiceList
 
-###############################
 # Cooccurrence of positive ESS
-
 cooccur.ess.pos <- cooccur(mat=t(ServiceBySiteNoZeroPOS),type="spp_site",thresh=FALSE,spp_names=TRUE)
 summary(cooccur.ess.pos)
 plot(cooccur.ess.pos)
@@ -621,15 +668,14 @@ cooccur.ess.any <- cooccur(mat=t(ServiceBySiteNoZeroANY),type="spp_site",thresh=
 summary(cooccur.ess.any)
 plot(cooccur.ess.any)
 
-# Gather and 
-nrow(plot(cooccur.ess.pos)$data)
-nrow(plot(cooccur.ess.neg)$data)
-nrow(plot(cooccur.ess.both)$data)
-nrow(plot(cooccur.ess.any)$data)
-
+# Output the pairwise relationships to Excel to plot as pivot tables
+plot(cooccur.ess.pos)$data
+plot(cooccur.ess.neg)$data
+plot(cooccur.ess.both)$data
+plot(cooccur.ess.any)$data
 
 ###############################################################
-# Re-run co-occurrence analysis excluding ESS mapped to multiple threats
+### 08.11 Co-occurrence analysis excluding ESS mapped to multiple threats
 ###############################################################
 
 GuyMappingReduced<-subset(GuyMappingData,GuyMappingData$n<2)
@@ -678,9 +724,7 @@ for(x in 1:nrow(ServiceBySite)){
 }
 colnames(ServiceBySiteNoZeroANY)<-ServiceList
 
-###############################
 # Cooccurrence of positive ESS
-
 cooccur.ess.pos <- cooccur(mat=t(ServiceBySiteNoZeroPOS),type="spp_site",thresh=FALSE,spp_names=TRUE)
 summary(cooccur.ess.pos)
 plot(cooccur.ess.pos)
@@ -700,26 +744,63 @@ cooccur.ess.any <- cooccur(mat=t(ServiceBySiteNoZeroANY),type="spp_site",thresh=
 summary(cooccur.ess.any)
 plot(cooccur.ess.any)
 
-# Gather and 
+# Output the pairwise relationships to Excel to plot as pivot tables
 plot(cooccur.ess.pos)$data
 plot(cooccur.ess.neg)$data
 plot(cooccur.ess.both)$data
 plot(cooccur.ess.any)$data
 
 
+############################################################################################################
+### 08.12 Omnibus multinomial models of habitat quality and ESS
+############################################################################################################
+
+# Create dataset to run analyses
+OmnibusData<-cbind(ServiceBySite,IUCNIndex,BirdIndex)
+# Exclude rows with missing data
+OmnibusData<-OmnibusData[complete.cases(OmnibusData),]
+
+# First model is explaining IUCN index with positive and negative ESS
+OmniModIUCN<-glm(IUCNIndex~Crop.POS+ Fodder.POS+ Fibre.POS +Livestock.POS+ Wild.food.POS+
+                   Aquaculture.POS +Water.POS +Regulating.POS+ Recreation.POS+ Crop.NEG +Fodder.NEG+
+                   Fibre.NEG +Livestock.NEG+ Wild.food.NEG+Aquaculture.NEG +Water.NEG+ Regulating.NEG
+                 +Recreation.NEG,data=OmnibusData)
+
+# Second model is explaining the Bird index with positive and negative ESS
+OmniModBirdIndex<-glm(BirdIndex~Crop.POS+ Fodder.POS+ Fibre.POS +Livestock.POS+ Wild.food.POS+
+                        Aquaculture.POS +Water.POS +Regulating.POS+ Recreation.POS+ Crop.NEG +Fodder.NEG+
+                        Fibre.NEG +Livestock.NEG+ Wild.food.NEG+Aquaculture.NEG +Water.NEG+ Regulating.NEG
+                      +Recreation.NEG,data=OmnibusData)
+
+# Added in for the dredge() function to work properly
+options(na.action = "na.fail")
+
+# Dredge all possible subsets - the "extra" argument adds R2 and F-statistics
+OmniDredgeIUCN<-dredge(OmniModIUCN,trace=2, m.lim = c(NA, 1), extra = c("R^2", F = function(x)
+  summary(x)$fstatistic[[1]]))
+# Display all models with delta-AICc<4
+subset(OmniDredgeIUCN, delta < 4)
+# Model averaging of the parameters of models comprising the model set that make up 
+# 95% of the confidence for the set (i.e. there is a 95% chance that the top model is 
+# in there somewhere)
+OmniDredgeIUCNModAvg<-model.avg(OmniDredgeIUCN, subset = cumsum(weight) <= .95)
+summary(OmniDredgeIUCNModAvg) # can't calculate R2 for the averaged model
 
 
-
-
-
-
-
-
+# Dredge all possible subsets - the "extra" argument adds R2 and F-statistics
+OmniDredgeBirdIndex<-dredge(OmniModBirdIndex,trace=2)
+# Display all models with delta-AICc<4
+subset(OmniDredgeBirdIndex, delta < 4)
+# Model averaging of the parameters of models comprising the model set that make up 
+# 95% of the confidence for the set (i.e. there is a 95% chance that the top model is 
+# in there somewhere)
+OmniDredgeBirdIndexModAvg<-model.avg(OmniDredgeBirdIndex, subset = cumsum(weight) <= .95)
+summary(OmniDredgeBirdIndexModAvg) # can't calculate R2 for the averaged model
 
 
 ############################################################################################################
-
-# Code Graveyard
+### 08.13 Code Graveyard
+############################################################################################################
 
 # Cooccurrence plots using networks
 NegPos<-character()
