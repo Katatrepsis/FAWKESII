@@ -131,9 +131,9 @@ for(x in 1:nrow(ServiceBySite)){
   SiteServices<-subset(N2000Impact,N2000Impact$SITECODE==rownames(ServiceBySite)[x])
   # For each service group (defined by Guy), sum the number of times it was positive or negative
   for(y in 1:length(ServiceList)){
-    if(nrow(subset(SiteServices,SiteServices[,10+y]=="c" & SiteServices$IMPACT_TYPE=="P"))>0) {ServiceBySite[x,y] <- 1} else {ServiceBySite[x,y] <- 0}
-    if(nrow(subset(SiteServices,SiteServices[,10+y]=="c" & SiteServices$IMPACT_TYPE=="N"))>0) {ServiceBySite[x,y+9] <- 1} else {ServiceBySite[x,y+9] <- 0}
-    if("P"%in%subset(SiteServices,SiteServices[,10+y]=="c")$IMPACT_TYPE & "N"%in%subset(SiteServices,SiteServices[,8+y]=="c")$IMPACT_TYPE) {ServiceBySite[x,y+18]<-1;ServiceBySite[x,y] <- 0;ServiceBySite[x,y+9] <- 0} else {ServiceBySite[x,y+18]<-0}
+    if(nrow(subset(SiteServices,SiteServices[,10+y] %in% c("c","x") & SiteServices$IMPACT_TYPE=="P"))>0) {ServiceBySite[x,y] <- 1} else {ServiceBySite[x,y] <- 0}
+    if(nrow(subset(SiteServices,SiteServices[,10+y] %in% c("c","x") & SiteServices$IMPACT_TYPE=="N"))>0) {ServiceBySite[x,y+9] <- 1} else {ServiceBySite[x,y+9] <- 0}
+    if("P"%in%subset(SiteServices,SiteServices[,10+y] %in% c("c","x"))$IMPACT_TYPE & "N"%in%subset(SiteServices,SiteServices[,8+y] %in% c("c","x"))$IMPACT_TYPE) {ServiceBySite[x,y+18]<-1;ServiceBySite[x,y] <- 0;ServiceBySite[x,y+9] <- 0} else {ServiceBySite[x,y+18]<-0}
     ServiceBySite[x,y+27]<-ServiceBySite[x,y]-ServiceBySite[x,y+9]
   }
   # Timer to track progress of loop
@@ -426,7 +426,7 @@ Habitats<-c("N01","N02","N05","N06","N07","N08","N10","N12","N14","N15","N16","N
 AllESS$Habitat<-rep(Habitats,each=9)
 AllESS<-AllESS[,c(1,3,2,4,5)]
 
-par(mfrow=c(3,4))
+par(mfrow=c(3,3))
 barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Crop"))),main="Crop",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
 barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Fodder"))),main="Fodder",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
 barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Fibre"))),main="Fibre",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
@@ -484,13 +484,14 @@ for(x in 1:13){
   SummaryBirdData[x,3]<-sd(subset(BirdIndex,NetESS==x-9),na.rm=TRUE)/sqrt(length(subset(BirdIndex,NetESS==x-9)))
   SummaryBirdData[x,4]<-length(subset(BirdIndex,NetESS==x-9))
 }
-plot(SummaryBirdData[,1],SummaryBirdData[,2],ylim=c(0.7,1.3),ylab="Conservation index",xlab="Net ESS")
+plot(SummaryBirdData[,1],SummaryBirdData[,2],ylim=c(0,2),ylab="Conservation index",xlab="Net ESS")
 #arrows(SummaryBirdData[,1],SummaryBirdData[,2],SummaryBirdData[,1],SummaryBirdData[,2]+SummaryBirdData[,3],length=0)
 #arrows(SummaryBirdData[,1],SummaryBirdData[,2],SummaryBirdData[,1],SummaryBirdData[,2]-SummaryBirdData[,3],length=0)
 cor.test(NetESS,BirdIndex,method="spearman")
-abline(lm(SummaryBirdData[,2]~SummaryBirdData[,1],weights=SummaryBirdData[,4]))
-text(-7,1.25,"A",cex=2)
-
+#abline(lm(SummaryBirdData[,2]~SummaryBirdData[,1],weights=SummaryBirdData[,4]))
+text(-7,1.75,"A",cex=2)
+points(jitter(NetESS),BirdIndex,col="lightgrey",cex=0.5)
+points(SummaryBirdData[,1],SummaryBirdData[,2],pch=19)
 mod<-lm(BirdIndex~NetESS)
 newx <- seq(min(NetESS), max(NetESS), length.out=100)
 preds <- predict(mod, newdata = data.frame(NetESS=newx), interval = 'confidence')
@@ -502,7 +503,6 @@ abline(mod)
 # intervals
 lines(newx, preds[ ,3], lty = 'dashed', col = 'red');lines(newx, preds[ ,2], lty = 'dashed', col = 'red')
 
-
 # Net ESS versus IUCN status
 
 SummaryIUCNData<-matrix(ncol=4,nrow=13)
@@ -513,13 +513,14 @@ for(x in 1:13){
   SummaryIUCNData[x,3]<-sd(subset(IUCNIndex,NetESS==x-9),na.rm=TRUE)/sqrt(length(subset(IUCNIndex,NetESS==x-9)))
   SummaryIUCNData[x,4]<-length(subset(IUCNIndex,NetESS==x-9))
 }
-plot(SummaryIUCNData[,1],SummaryIUCNData[,2],ylim=c(0.4,0.8),ylab="IUCN trends index",xlab="Net ESS")
+plot(SummaryIUCNData[,1],SummaryIUCNData[,2],ylim=c(0,2),ylab="IUCN trends index",xlab="Net ESS")
 #arrows(SummaryIUCNData[,1],SummaryIUCNData[,2],SummaryIUCNData[,1],SummaryIUCNData[,2]+SummaryIUCNData[,3],length=0)
 #arrows(SummaryIUCNData[,1],SummaryIUCNData[,2],SummaryIUCNData[,1],SummaryIUCNData[,2]-SummaryIUCNData[,3],length=0)
 cor.test(NetESS,IUCNIndex,method="spearman")
-abline(lm(SummaryIUCNData[,2]~SummaryIUCNData[,1],weights=SummaryIUCNData[,4]))
-text(-7,0.765,"B",cex=2)
-
+#abline(lm(SummaryIUCNData[,2]~SummaryIUCNData[,1],weights=SummaryIUCNData[,4]))
+text(-7,1.8,"B",cex=2)
+points(jitter(NetESS),IUCNIndex,col="lightgrey",cex=0.5)
+points(SummaryIUCNData[,1],SummaryIUCNData[,2],pch=19)
 mod<-lm(IUCNIndex~NetESS)
 newx <- seq(min(NetESS), max(NetESS), length.out=100)
 preds <- predict(mod, newdata = data.frame(NetESS=newx), interval = 'confidence')
@@ -780,6 +781,8 @@ OmniDredgeIUCN<-dredge(OmniModIUCN,trace=2, m.lim = c(NA, 1), extra = c("R^2", F
   summary(x)$fstatistic[[1]]))
 # Display all models with delta-AICc<4
 subset(OmniDredgeIUCN, delta < 4)
+# Get top model
+summary(get.models(OmniDredgeIUCN, 1)[[1]])
 # Model averaging of the parameters of models comprising the model set that make up 
 # 95% of the confidence for the set (i.e. there is a 95% chance that the top model is 
 # in there somewhere)
@@ -799,7 +802,14 @@ summary(OmniDredgeBirdIndexModAvg) # can't calculate R2 for the averaged model
 
 
 ############################################################################################################
-### 08.13 Code Graveyard
+### 08.13 Subgroup analysis of Net ESS, Bird index and IUCN
+############################################################################################################
+
+SubGroupData<-cbind(BirdIndex,NetESS,IUCNIndex)
+SubGroupData$Biogeog<-BIOREGION$BIOGEFRAPHICREG[match(rownames(SubGroupData),BIOREGION$SITECODE)]
+
+############################################################################################################
+### 08.14 Code Graveyard
 ############################################################################################################
 
 # Cooccurrence plots using networks
