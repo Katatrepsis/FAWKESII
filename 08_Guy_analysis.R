@@ -88,7 +88,8 @@ N2000Impact$IMPACTCODE<-as.factor(N2000Impact$IMPACTCODE)
 ###############################################
 
 # First, subset N2000Impact by intensity and occurrence
-N2000Impact<-subset(N2000Impact,N2000Impact$INTENSITY!="LOW" & N2000Impact$OCCURRENCE!="OUT")
+N2000Impact<-subset(N2000Impact,N2000Impact$INTENSITY=="MEDIUM" | N2000Impact$INTENSITY=="HIGH")
+N2000Impact<-subset(N2000Impact,N2000Impact$OCCURRENCE=="IN" | N2000Impact$OCCURRENCE=="BOTH")
 
 # Assign site type
 # Load data
@@ -102,7 +103,7 @@ for(x in 1:nrow(N2000Impact)){
 }
 
 # Now subset to exclude SITE_TYPE="B"
-N2000Impact<-subset(N2000Impact,N2000Impact$SITE_TYPE!="B")
+N2000Impact<-subset(N2000Impact,N2000Impact$SITE_TYPE %in% c("A","C"))
 
 
 ############################################################################
@@ -470,6 +471,8 @@ for(x in 1:nrow(ServiceBySite)){
   flush.console()
 }
 
+SiteData<-cbind(IUCNIndex,BirdIndex,IUCNNumber,BirdNumber,NetESS)
+SiteData<-as.data.frame(SiteData[complete.cases(SiteData),])
 par(mfrow=c(1,2),mar=c(5,4,4,2))
 #plot(NetESS,BirdIndex,xlab="NetESS",ylab="Conservation index")
 #mtext("A",cex=2,at=3)
@@ -492,14 +495,14 @@ cor.test(NetESS,BirdIndex,method="spearman")
 text(-7,1.75,"A",cex=2)
 points(jitter(NetESS),BirdIndex,col="lightgrey",cex=0.5)
 points(SummaryBirdData[,1],SummaryBirdData[,2],pch=19)
-mod<-lm(BirdIndex~NetESS)
+mod1<-lm(BirdIndex~NetESS,data=SiteData)
 newx <- seq(min(NetESS), max(NetESS), length.out=100)
-preds <- predict(mod, newdata = data.frame(NetESS=newx), interval = 'confidence')
+preds <- predict(mod1, newdata = data.frame(NetESS=newx), interval = 'confidence')
 #plot(NetESS,BirdIndex, type = 'n',ylim=c(0.5,0.7))
 # add fill
 polygon(c(rev(newx), newx), c(rev(preds[ ,3]), preds[ ,2]), col = rgb(0.1,0.1,0.1,0.2), border = NA)
 # model
-abline(mod)
+abline(mod1)
 # intervals
 lines(newx, preds[ ,3], lty = 'dashed', col = 'red');lines(newx, preds[ ,2], lty = 'dashed', col = 'red')
 
@@ -521,14 +524,14 @@ cor.test(NetESS,IUCNIndex,method="spearman")
 text(-7,1.8,"B",cex=2)
 points(jitter(NetESS),IUCNIndex,col="lightgrey",cex=0.5)
 points(SummaryIUCNData[,1],SummaryIUCNData[,2],pch=19)
-mod<-lm(IUCNIndex~NetESS)
+mod2<-lm(IUCNIndex~NetESS,data=SiteData)
 newx <- seq(min(NetESS), max(NetESS), length.out=100)
-preds <- predict(mod, newdata = data.frame(NetESS=newx), interval = 'confidence')
+preds <- predict(mod2, newdata = data.frame(NetESS=newx), interval = 'confidence')
 #plot(NetESS,IUCNIndex, type = 'n',ylim=c(0.5,0.7))
 # add fill
 polygon(c(rev(newx), newx), c(rev(preds[ ,3]), preds[ ,2]), col = rgb(0.1,0.1,0.1,0.2), border = NA)
 # model
-abline(mod)
+abline(mod2)
 # intervals
 lines(newx, preds[ ,3], lty = 'dashed', col = 'red');lines(newx, preds[ ,2], lty = 'dashed', col = 'red')
 
@@ -556,6 +559,8 @@ for(x in 1:length(BirdSpeciesNames)){
   BirdSites<-subset(N2000Species$SITECODE,N2000Species$GLOBAL%in%c("A","B","C") & N2000Species$SPECIESNAME==BirdSpeciesNames[x])
   BirdNetESS[x]<-mean(subset(ServiceBySite$NetESS,rownames(ServiceBySite)%in%BirdSites),na.rm=TRUE)
 }
+
+
 par(mfrow=c(1,1))
 plot(BirdNetESS,BirdSpeciesIndex,xlab="Net ESS",ylab="Conservation index")
 abline(lm(BirdSpeciesIndex~BirdNetESS))
@@ -565,8 +570,8 @@ cor.test(BirdNetESS,BirdSpeciesIndex,method="spearman")
 # (ii) the IUCN classification for each species (increasing/decreasing/stable as 
 # well as VU, EN, etc) vs mean net ESS
 # First, take the data from above
-BirdSpeciesOutput<-data.frame(BirdSpecies=BirdSpeciesNames,ConservationIndex=BirdSpeciesIndex,
-                              NetESS=BirdNetESS)
+BirdSpeciesOutput<-data.frame(BirdSpecies=BirdSpeciesNames,ConservationIndex=BirdSpeciesIndex,NetESS=BirdNetESS)
+
 # Next, find the species from the IUCN table
 SigSpeciesIUCN<-statusTable[na.omit(match(BirdSpeciesNames,statusTable[,1])),c(1,3,5)]
 
@@ -581,6 +586,7 @@ par(mfrow=c(2,2),mar=c(5,4,4,2)+0.1)
 SigSpeciesIUCN3<-subset(SigSpeciesIUCN2,SigSpeciesIUCN2$Population!="Unknown")
 SigSpeciesIUCN3$Population<-droplevels(SigSpeciesIUCN3$Population)
 SigSpeciesIUCN3$Population<-factor(SigSpeciesIUCN3$Population,levels=c("Decreasing","Stable","Increasing"))
+SigSpeciesIUCN3<-SigSpeciesIUCN3[complete.cases(SigSpeciesIUCN3),]
 boxplot(SigSpeciesIUCN3$ConservationIndex~SigSpeciesIUCN3$Population, ylab="Conservation index")
 mtext("A",cex=2,at=1)
 kruskal.test(SigSpeciesIUCN3$ConservationIndex~SigSpeciesIUCN3$Population)
@@ -599,6 +605,7 @@ mtext("B",cex=2,at=1)
 SigSpeciesIUCN4<-subset(SigSpeciesIUCN2,SigSpeciesIUCN2$Status!="NE")
 SigSpeciesIUCN4$Status<-droplevels(SigSpeciesIUCN4$Status)
 SigSpeciesIUCN4$Status<-factor(SigSpeciesIUCN4$Status,levels=c("CR","EN","VU","NT","LC"))
+SigSpeciesIUCN4<-SigSpeciesIUCN4[complete.cases(SigSpeciesIUCN4),]
 
 boxplot(SigSpeciesIUCN4$ConservationIndex~SigSpeciesIUCN4$Status, ylab="Conservation index")
 kruskal.test((SigSpeciesIUCN4$ConservationIndex~SigSpeciesIUCN4$Status))
@@ -807,6 +814,30 @@ summary(OmniDredgeBirdIndexModAvg) # can't calculate R2 for the averaged model
 
 SubGroupData<-cbind(BirdIndex,NetESS,IUCNIndex)
 SubGroupData$Biogeog<-BIOREGION$BIOGEFRAPHICREG[match(rownames(SubGroupData),BIOREGION$SITECODE)]
+
+# TO BE COMPLETED [CH, MB]
+
+############################################################################################################
+### 08.14 Weighted means of Net ESS, Bird index and IUCN
+###
+### This analysis attempts to create a weighted mean of the ESS to better explain 
+### variation in the Bird Index.
+############################################################################################################
+
+PosNegESS<-ServiceBySite[,c(28:36)]
+ESSPresence<-matrix(nrow=nrow(ServiceBySite),ncol=9)
+for(x in 1:nrow(ServiceBySite)){
+  for(y in 1:9){
+    if(sum(ServiceBySite[x,c(y,y+9,y+18)])>0) {ESSPresence[x,y]<-1} else {ESSPresence[x,y]<-0}
+  }
+}
+colnames(PosNegESS)<-ServiceList
+
+WtMeanData<-cbind(BirdIndex,NetESS,IUCNIndex,PosNegESS)
+WtMeanData<-as.data.frame(WtMeanData[complete.cases(WtMeanData),])
+
+WtMeanMod<-lm(BirdIndex~.^2,data=WtMeanData) # explains 4.4% of variance
+SimpleMeanMod<-lm(BirdIndex~NetESS,data=WtMeanData) # explains 1.6% of variance
 
 ############################################################################################################
 ### 08.14 Code Graveyard
