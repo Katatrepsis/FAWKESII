@@ -134,7 +134,7 @@ for(x in 1:nrow(ServiceBySite)){
   for(y in 1:length(ServiceList)){
     if(nrow(subset(SiteServices,SiteServices[,10+y] %in% c("c","x") & SiteServices$IMPACT_TYPE=="P"))>0) {ServiceBySite[x,y] <- 1} else {ServiceBySite[x,y] <- 0}
     if(nrow(subset(SiteServices,SiteServices[,10+y] %in% c("c","x") & SiteServices$IMPACT_TYPE=="N"))>0) {ServiceBySite[x,y+9] <- 1} else {ServiceBySite[x,y+9] <- 0}
-    if("P"%in%subset(SiteServices,SiteServices[,10+y] %in% c("c","x"))$IMPACT_TYPE & "N"%in%subset(SiteServices,SiteServices[,8+y] %in% c("c","x"))$IMPACT_TYPE) {ServiceBySite[x,y+18]<-1;ServiceBySite[x,y] <- 0;ServiceBySite[x,y+9] <- 0} else {ServiceBySite[x,y+18]<-0}
+    if("P"%in%subset(SiteServices,SiteServices[,10+y] %in% c("c","x"))$IMPACT_TYPE & "N"%in%subset(SiteServices,SiteServices[,10+y] %in% c("c","x"))$IMPACT_TYPE) {ServiceBySite[x,y+18]<-1;ServiceBySite[x,y] <- 0;ServiceBySite[x,y+9] <- 0} else {ServiceBySite[x,y+18]<-0}
     ServiceBySite[x,y+27]<-ServiceBySite[x,y]-ServiceBySite[x,y+9]
   }
   # Timer to track progress of loop
@@ -147,7 +147,8 @@ NetESS<-rowSums(ServiceBySite[,c(28:36)])
 NetESSwt<-rowSums(ServiceBySite[,c(28:34)])/7+ServiceBySite[,35]+ServiceBySite[,36]
 ServiceBySite<-cbind(ServiceBySite,NetESS,NetESSwt)
 
-# Add Bioregion
+# Add Bioregion (note that sometimes the BIOREGION$SITECODE field is called "i..SITECODE" which
+# causes problems with matching the datasets - it may depend on operating system)
 BIOREGION<-read.csv("BIOREGION.csv")
 ServiceBySite<-data.frame(ServiceBySite,Biogeog=as.factor(BIOREGION[match(rownames(ServiceBySite),BIOREGION$SITECODE),2]))
 
@@ -427,16 +428,80 @@ Habitats<-c("N01","N02","N05","N06","N07","N08","N10","N12","N14","N15","N16","N
 AllESS$Habitat<-rep(Habitats,each=9)
 AllESS<-AllESS[,c(1,3,2,4,5)]
 
+
+OnlyMarineESS<-OnlyWaterESS<-OnlyHeathGrassESS<-OnlyFarmESS<-OnlyWoodESS<-OnlyOtherESS<-AllESS
+
+OnlyMarineESS[OnlyMarineESS$Habitat%in%c("N06","N07","N08","N10","N12","N14","N15","N16","N17","N19","N23"),c(1:3)]<-0
+OnlyWaterESS[OnlyWaterESS$Habitat%in%c("N01","N02","N05","N08","N10","N12","N14","N15","N16","N17","N19","N23"),c(1:3)]<-0
+OnlyHeathGrassESS[OnlyHeathGrassESS$Habitat%in%c("N01","N02","N05","N06","N07","N12","N14","N15","N16","N17","N19","N23"),c(1:3)]<-0
+OnlyFarmESS[OnlyFarmESS$Habitat%in%c("N01","N02","N05","N06","N07","N08","N10","N16","N17","N19","N23"),c(1:3)]<-0
+OnlyWoodESS[OnlyWoodESS$Habitat%in%c("N01","N02","N05","N06","N07","N08","N10","N12","N14","N15","N23"),c(1:3)]<-0
+OnlyOtherESS[OnlyOtherESS$Habitat%in%c("N01","N02","N05","N06","N07","N08","N10","N12","N14","N15","N16","N17","N19"),c(1:3)]<-0
+
+
 par(mfrow=c(3,3))
-barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Crop"))),main="Crop",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
-barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Fodder"))),main="Fodder",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
-barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Fibre"))),main="Fibre",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
-barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Livestock"))),main="Livestock",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
-barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Wild.food"))),main="Wild food",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
-barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Aquaculture"))),main="Aquaculture",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
-barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Water"))),main="Water",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
-barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Regulating"))),main="Regulating",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
-barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Recreation"))),main="Recreation",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
+barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Crop")))[,rev(c(1:14))],main="Crop",names.arg=rev(Habitats),horiz=TRUE,las=1,xlim=c(0,1))
+barplot(t(as.matrix(subset(OnlyMarineESS,OnlyMarineESS$ESS=="Crop")))[,rev(c(1:14))],add=TRUE,col=c("darkblue","blue","lightblue"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyWaterESS,OnlyWaterESS$ESS=="Crop")))[,rev(c(1:14))],add=TRUE,col=c("chocolate4","chocolate3","chocolate2"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyHeathGrassESS,OnlyHeathGrassESS$ESS=="Crop")))[,rev(c(1:14))],add=TRUE,col=c("mediumpurple","mediumorchid4","violet"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyFarmESS,OnlyFarmESS$ESS=="Crop")))[,rev(c(1:14))],add=TRUE,col=c("goldenrod4","goldenrod3","goldenrod2"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyWoodESS,OnlyWoodESS$ESS=="Crop")))[,rev(c(1:14))],add=TRUE,col=c("darkgreen","green","lightgreen"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+
+barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Fodder")))[,rev(c(1:14))],main="Fodder",names.arg=rev(Habitats),horiz=TRUE,las=1,xlim=c(0,1))
+barplot(t(as.matrix(subset(OnlyMarineESS,OnlyMarineESS$ESS=="Fodder")))[,rev(c(1:14))],add=TRUE,col=c("darkblue","blue","lightblue"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyWaterESS,OnlyWaterESS$ESS=="Fodder")))[,rev(c(1:14))],add=TRUE,col=c("chocolate4","chocolate3","chocolate2"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyHeathGrassESS,OnlyHeathGrassESS$ESS=="Fodder")))[,rev(c(1:14))],add=TRUE,col=c("mediumpurple","mediumorchid4","violet"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyFarmESS,OnlyFarmESS$ESS=="Fodder")))[,rev(c(1:14))],add=TRUE,col=c("goldenrod4","goldenrod3","goldenrod2"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyWoodESS,OnlyWoodESS$ESS=="Fodder")))[,rev(c(1:14))],add=TRUE,col=c("darkgreen","green","lightgreen"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+
+barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Fibre")))[,rev(c(1:14))],main="Fibre",names.arg=rev(Habitats),horiz=TRUE,las=1,xlim=c(0,1))
+barplot(t(as.matrix(subset(OnlyMarineESS,OnlyMarineESS$ESS=="Fibre")))[,rev(c(1:14))],add=TRUE,col=c("darkblue","blue","lightblue"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyWaterESS,OnlyWaterESS$ESS=="Fibre")))[,rev(c(1:14))],add=TRUE,col=c("chocolate4","chocolate3","chocolate2"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyHeathGrassESS,OnlyHeathGrassESS$ESS=="Fibre")))[,rev(c(1:14))],add=TRUE,col=c("mediumpurple","mediumorchid4","violet"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyFarmESS,OnlyFarmESS$ESS=="Fibre")))[,rev(c(1:14))],add=TRUE,col=c("goldenrod4","goldenrod3","goldenrod2"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyWoodESS,OnlyWoodESS$ESS=="Fibre")))[,rev(c(1:14))],add=TRUE,col=c("darkgreen","green","lightgreen"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+
+barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Livestock")))[,rev(c(1:14))],main="Livestock",names.arg=Habitats,horiz=TRUE,las=1,xlim=c(0,1))
+barplot(t(as.matrix(subset(OnlyMarineESS,OnlyMarineESS$ESS=="Livestock")))[,rev(c(1:14))],add=TRUE,col=c("darkblue","blue","lightblue"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyWaterESS,OnlyWaterESS$ESS=="Livestock")))[,rev(c(1:14))],add=TRUE,col=c("chocolate4","chocolate3","chocolate2"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyHeathGrassESS,OnlyHeathGrassESS$ESS=="Livestock")))[,rev(c(1:14))],add=TRUE,col=c("mediumpurple","mediumorchid4","violet"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyFarmESS,OnlyFarmESS$ESS=="Livestock")))[,rev(c(1:14))],add=TRUE,col=c("goldenrod4","goldenrod3","goldenrod2"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyWoodESS,OnlyWoodESS$ESS=="Livestock")))[,rev(c(1:14))],add=TRUE,col=c("darkgreen","green","lightgreen"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+
+barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Wild.food")))[,rev(c(1:14))],main="Wild food",names.arg=rev(Habitats),horiz=TRUE,las=1,xlim=c(0,1))
+barplot(t(as.matrix(subset(OnlyMarineESS,OnlyMarineESS$ESS=="Wild.food")))[,rev(c(1:14))],add=TRUE,col=c("darkblue","blue","lightblue"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyWaterESS,OnlyWaterESS$ESS=="Wild.food")))[,rev(c(1:14))],add=TRUE,col=c("chocolate4","chocolate3","chocolate2"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyHeathGrassESS,OnlyHeathGrassESS$ESS=="Wild.food")))[,rev(c(1:14))],add=TRUE,col=c("mediumpurple","mediumorchid4","violet"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyFarmESS,OnlyFarmESS$ESS=="Wild.food")))[,rev(c(1:14))],add=TRUE,col=c("goldenrod4","goldenrod3","goldenrod2"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyWoodESS,OnlyWoodESS$ESS=="Wild.food")))[,rev(c(1:14))],add=TRUE,col=c("darkgreen","green","lightgreen"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+
+barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Aquaculture")))[,rev(c(1:14))],main="Aquaculture",names.arg=rev(Habitats),horiz=TRUE,las=1,xlim=c(0,1))
+barplot(t(as.matrix(subset(OnlyMarineESS,OnlyMarineESS$ESS=="Aquaculture")))[,rev(c(1:14))],add=TRUE,col=c("darkblue","blue","lightblue"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyWaterESS,OnlyWaterESS$ESS=="Aquaculture")))[,rev(c(1:14))],add=TRUE,col=c("chocolate4","chocolate3","chocolate2"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyHeathGrassESS,OnlyHeathGrassESS$ESS=="Aquaculture")))[,rev(c(1:14))],add=TRUE,col=c("mediumpurple","mediumorchid4","violet"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyFarmESS,OnlyFarmESS$ESS=="Aquaculture")))[,rev(c(1:14))],add=TRUE,col=c("goldenrod4","goldenrod3","goldenrod2"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyWoodESS,OnlyWoodESS$ESS=="Aquaculture")))[,rev(c(1:14))],add=TRUE,col=c("darkgreen","green","lightgreen"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+
+barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Water")))[,rev(c(1:14))],main="Water",names.arg=rev(Habitats),horiz=TRUE,las=1,xlim=c(0,1))
+barplot(t(as.matrix(subset(OnlyMarineESS,OnlyMarineESS$ESS=="Water")))[,rev(c(1:14))],add=TRUE,col=c("darkblue","blue","lightblue"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyWaterESS,OnlyWaterESS$ESS=="Water")))[,rev(c(1:14))],add=TRUE,col=c("chocolate4","chocolate3","chocolate2"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyHeathGrassESS,OnlyHeathGrassESS$ESS=="Water")))[,rev(c(1:14))],add=TRUE,col=c("mediumpurple","mediumorchid4","violet"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyFarmESS,OnlyFarmESS$ESS=="Water")))[,rev(c(1:14))],add=TRUE,col=c("goldenrod4","goldenrod3","goldenrod2"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyWoodESS,OnlyWoodESS$ESS=="Water")))[,rev(c(1:14))],add=TRUE,col=c("darkgreen","green","lightgreen"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+
+barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Regulating")))[,rev(c(1:14))],main="Regulating",names.arg=rev(Habitats),horiz=TRUE,las=1,xlim=c(0,1))
+barplot(t(as.matrix(subset(OnlyMarineESS,OnlyMarineESS$ESS=="Regulating")))[,rev(c(1:14))],add=TRUE,col=c("darkblue","blue","lightblue"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyWaterESS,OnlyWaterESS$ESS=="Regulating")))[,rev(c(1:14))],add=TRUE,col=c("chocolate4","chocolate3","chocolate2"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyHeathGrassESS,OnlyHeathGrassESS$ESS=="Regulating")))[,rev(c(1:14))],add=TRUE,col=c("mediumpurple","mediumorchid4","violet"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyFarmESS,OnlyFarmESS$ESS=="Regulating")))[,rev(c(1:14))],add=TRUE,col=c("goldenrod4","goldenrod3","goldenrod2"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyWoodESS,OnlyWoodESS$ESS=="Regulating")))[,rev(c(1:14))],add=TRUE,col=c("darkgreen","green","lightgreen"),horiz=TRUE,las=1,xlim=c(0,1),axisnames=FALSE)
+
+barplot(t(as.matrix(subset(AllESS,AllESS$ESS=="Recreation")))[,rev(c(1:14))],main="Recreation",names.arg=rev(Habitats),horiz=TRUE,las=1,xlim=c(0,1))
+barplot(t(as.matrix(subset(OnlyMarineESS,OnlyMarineESS$ESS=="Recreation")))[,rev(c(1:14))],add=TRUE,col=c("darkblue","blue","lightblue"),horiz=TRUE,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyWaterESS,OnlyWaterESS$ESS=="Recreation")))[,rev(c(1:14))],add=TRUE,col=c("chocolate4","chocolate3","chocolate2"),horiz=TRUE,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyHeathGrassESS,OnlyHeathGrassESS$ESS=="Recreation")))[,rev(c(1:14))],add=TRUE,col=c("mediumpurple","mediumorchid4","violet"),horiz=TRUE,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyFarmESS,OnlyFarmESS$ESS=="Recreation")))[,rev(c(1:14))],add=TRUE,col=c("goldenrod4","goldenrod3","goldenrod2"),horiz=TRUE,xlim=c(0,1),axisnames=FALSE)
+barplot(t(as.matrix(subset(OnlyWoodESS,OnlyWoodESS$ESS=="Recreation")))[,rev(c(1:14))],add=TRUE,col=c("darkgreen","green","lightgreen"),horiz=TRUE,xlim=c(0,1),axisnames=FALSE)
 
 
 ############################################################################
@@ -487,7 +552,7 @@ for(x in 1:13){
   SummaryBirdData[x,3]<-sd(subset(BirdIndex,NetESS==x-9),na.rm=TRUE)/sqrt(length(subset(BirdIndex,NetESS==x-9)))
   SummaryBirdData[x,4]<-length(subset(BirdIndex,NetESS==x-9))
 }
-plot(SummaryBirdData[,1],SummaryBirdData[,2],ylim=c(0,2),ylab="Conservation index",xlab="Net ESS")
+plot(SummaryBirdData[,1],SummaryBirdData[,2],ylim=c(0,2),xlim=c(-9,6),ylab="Conservation index",xlab="Net ESS")
 #arrows(SummaryBirdData[,1],SummaryBirdData[,2],SummaryBirdData[,1],SummaryBirdData[,2]+SummaryBirdData[,3],length=0)
 #arrows(SummaryBirdData[,1],SummaryBirdData[,2],SummaryBirdData[,1],SummaryBirdData[,2]-SummaryBirdData[,3],length=0)
 cor.test(NetESS,BirdIndex,method="spearman")
@@ -502,7 +567,8 @@ preds <- predict(mod1, newdata = data.frame(NetESS=newx), interval = 'confidence
 # add fill
 polygon(c(rev(newx), newx), c(rev(preds[ ,3]), preds[ ,2]), col = rgb(0.1,0.1,0.1,0.2), border = NA)
 # model
-abline(mod1)
+lines(newx,preds[,1],type="l")
+#abline(mod1)
 # intervals
 lines(newx, preds[ ,3], lty = 'dashed', col = 'red');lines(newx, preds[ ,2], lty = 'dashed', col = 'red')
 
@@ -516,7 +582,7 @@ for(x in 1:13){
   SummaryIUCNData[x,3]<-sd(subset(IUCNIndex,NetESS==x-9),na.rm=TRUE)/sqrt(length(subset(IUCNIndex,NetESS==x-9)))
   SummaryIUCNData[x,4]<-length(subset(IUCNIndex,NetESS==x-9))
 }
-plot(SummaryIUCNData[,1],SummaryIUCNData[,2],ylim=c(0,2),ylab="IUCN trends index",xlab="Net ESS")
+plot(SummaryIUCNData[,1],SummaryIUCNData[,2],ylim=c(0,2),xlim=c(-9,6),ylab="IUCN trends index",xlab="Net ESS")
 #arrows(SummaryIUCNData[,1],SummaryIUCNData[,2],SummaryIUCNData[,1],SummaryIUCNData[,2]+SummaryIUCNData[,3],length=0)
 #arrows(SummaryIUCNData[,1],SummaryIUCNData[,2],SummaryIUCNData[,1],SummaryIUCNData[,2]-SummaryIUCNData[,3],length=0)
 cor.test(NetESS,IUCNIndex,method="spearman")
@@ -531,7 +597,7 @@ preds <- predict(mod2, newdata = data.frame(NetESS=newx), interval = 'confidence
 # add fill
 polygon(c(rev(newx), newx), c(rev(preds[ ,3]), preds[ ,2]), col = rgb(0.1,0.1,0.1,0.2), border = NA)
 # model
-abline(mod2)
+lines(newx,preds[,1],type="l")
 # intervals
 lines(newx, preds[ ,3], lty = 'dashed', col = 'red');lines(newx, preds[ ,2], lty = 'dashed', col = 'red')
 
@@ -626,17 +692,44 @@ mtext("D",cex=2,at=1)
 ###############################################################
 
 # Data for map
-MikaOutput<-ServiceBySite[,c(1:38,40)]
-write.table(MikaOutput,"MikaOutput v2.txt")
+MikaOutput<-ServiceBySite
+write.table(MikaOutput,"MikaOutput v3.txt")
 
 ###############################################################
-### 08.9 Find frequency distribution of dominance
+### 08.9 Basic descriptive statistics
 ###############################################################
 
 # find cumulative distribution of habitat percentage cover
 par(mfrow=c(1,1))
 hist(subset(HABITATCLASS$PERCENTAGECOVER,HABITATCLASS$PERCENTAGECOVER>=50))
 plot(density(subset(HABITATCLASS$PERCENTAGECOVER,HABITATCLASS$PERCENTAGECOVER>=50)))
+
+# Plots of NetESS and number of ESS
+par(mar=c(4,5,3,2))
+hist(NetESS,col="grey",main=NULL,ylab="Freqency",xlab="Net ESS")
+hist(rowSums(AnyMention),col="grey",main=NULL,ylab="Freqency",xlab="Number of ESS",breaks=c(-1,0,1,2,3,4,5,6,7,8)+0.5)
+
+# Plots of NetESS and number of ESS
+par(mar=c(4,5,3,2))
+hist(NetESS,col="grey",main=NULL,ylab="Freqency",xlab="Net ESS")
+hist(rowSums(AnyMention),col="grey",main=NULL,ylab="Freqency",xlab="Number of ESS",breaks=c(0,1,2,3,4,5,6,7,8))
+
+
+###############################################################
+### 08.10 Sense check for "both" category
+###############################################################
+
+table(ServiceBySite[,1],ServiceBySite[,10],ServiceBySite[,19])
+table(ServiceBySite[,2],ServiceBySite[,11],ServiceBySite[,20])
+table(ServiceBySite[,3],ServiceBySite[,12],ServiceBySite[,21])
+table(ServiceBySite[,4],ServiceBySite[,13],ServiceBySite[,22])
+table(ServiceBySite[,5],ServiceBySite[,14],ServiceBySite[,23])
+table(ServiceBySite[,6],ServiceBySite[,15],ServiceBySite[,24])
+table(ServiceBySite[,7],ServiceBySite[,16],ServiceBySite[,25])
+table(ServiceBySite[,8],ServiceBySite[,17],ServiceBySite[,26])
+table(ServiceBySite[,9],ServiceBySite[,18],ServiceBySite[,27])
+
+subset(ServiceBySite,ServiceBySite[,9]==1 & ServiceBySite[,18]==1)
 
 ###############################################################
 ### 08.10 Cooccurrence analysis of ESS
@@ -667,9 +760,9 @@ summary(cooccur.ess.neg)
 plot(cooccur.ess.neg)
 
 # Cooccurrence of both positive and negative ESS
-cooccur.ess.both <- cooccur(mat=t(ServiceBySiteNoZeroBOTH),type="spp_site",thresh=FALSE,spp_names=TRUE)
-summary(cooccur.ess.both)
-plot(cooccur.ess.both)
+#cooccur.ess.both <- cooccur(mat=t(ServiceBySiteNoZeroBOTH),type="spp_site",thresh=FALSE,spp_names=TRUE)
+#summary(cooccur.ess.both)
+#plot(cooccur.ess.both)
 
 # Cooccurrence of any ESS
 cooccur.ess.any <- cooccur(mat=t(ServiceBySiteNoZeroANY),type="spp_site",thresh=FALSE,spp_names=TRUE)
@@ -677,10 +770,29 @@ summary(cooccur.ess.any)
 plot(cooccur.ess.any)
 
 # Output the pairwise relationships to Excel to plot as pivot tables
-plot(cooccur.ess.pos)$data
-plot(cooccur.ess.neg)$data
-plot(cooccur.ess.both)$data
-plot(cooccur.ess.any)$data
+PosCoocData<-plot(cooccur.ess.pos)$data
+NegCoocData<-plot(cooccur.ess.neg)$data
+#plot(cooccur.ess.both)$data
+AnyCoocData<-plot(cooccur.ess.any)$data
+
+PosCoocData[,1]<-sub(".POS","",PosCoocData[,1])
+PosCoocData[,2]<-sub(".POS","",PosCoocData[,2])
+
+NegCoocData[,1]<-sub(".NEG","",NegCoocData[,1])
+NegCoocData[,2]<-sub(".NEG","",NegCoocData[,2])
+
+NegCoocData2<-rbind(NegCoocData[c(1,2,3)],NegCoocData[,c(2,1,3)])
+PosCoocData2<-rbind(PosCoocData[c(1,2,3)],PosCoocData[,c(2,1,3)])
+AnyCoocData2<-rbind(AnyCoocData[c(1,2,3)],AnyCoocData[,c(2,1,3)])
+
+NegCoocData2[,4]<-paste(NegCoocData2[,1],NegCoocData2[,2],sep="")
+PosCoocData2[,4]<-paste(PosCoocData2[,1],PosCoocData2[,2],sep="")
+AnyCoocData2[,4]<-paste(AnyCoocData2[,1],AnyCoocData2[,2],sep="")
+
+CombinedCoocData<-cbind(ESS1=AnyCoocData2[,1],ESS2=AnyCoocData2[,2],ESSCombined=AnyCoocData2[,4],
+                        AnyCooc=AnyCoocData2[,3],
+                        NegCooc=NegCoocData2[match(AnyCoocData2[c(1:36),4],NegCoocData2[,4]),3],
+                        PosCooc=PosCoocData2[match(AnyCoocData2[c(1:36),4],PosCoocData2[,4]),3])
 
 ###############################################################
 ### 08.11 Co-occurrence analysis excluding ESS mapped to multiple threats
@@ -813,9 +925,37 @@ summary(OmniDredgeBirdIndexModAvg) # can't calculate R2 for the averaged model
 ############################################################################################################
 
 SubGroupData<-cbind(BirdIndex,NetESS,IUCNIndex)
-SubGroupData$Biogeog<-BIOREGION$BIOGEFRAPHICREG[match(rownames(SubGroupData),BIOREGION$SITECODE)]
+
+SubBiogeog<-as.vector(BIOREGION$BIOGEFRAPHICREG[match(as.factor(rownames(SubGroupData)),BIOREGION$SITECODE,)])
+
+SubGroupData2<-as.data.frame(cbind(SubGroupData,SubBiogeog))
+
+SubGroupData2<-SubGroupData2[complete.cases(SubGroupData2),]
+
+SubGroupData2<-transform(SubGroupData2,
+          BirdIndex=as.numeric(BirdIndex),
+          NewESS=as.numeric(NetESS),
+          IUCNIndex=as.numeric(IUCNIndex),
+          SubBiogeog=as.factor(SubBiogeog))
+
+SubGroupData2<-subset(SubGroupData2,SubGroupData2$SubBiogeog%in%c("Alpine","Atlantic","Boreal","Continental","Mediterranean"))
+
+modA<-lm(BirdIndex~as.numeric(NetESS),data=SubGroupData2)
+modB<-lm(BirdIndex~as.numeric(NetESS)+SubBiogeog,data=SubGroupData2)
+modC<-lm(BirdIndex~as.numeric(NetESS)*SubBiogeog,data=SubGroupData2)
+modD<-lm(BirdIndex~SubBiogeog,data=SubGroupData2)
+
+summary(modA) # Net ESS only
+summary(modB) # Net ESS with additive biogeog
+summary(modC) # Net ESS with interaction term
+summary(modD) # Biogeog only
+
+anova(modA,modB,modC,modD)
+
 
 # TO BE COMPLETED [CH, MB]
+
+# Data source for bird habitat types: http://www.ebcc.info/wpimages/other/SpeciesClassification2015.xls
 
 ############################################################################################################
 ### 08.14 Weighted means of Net ESS, Bird index and IUCN
@@ -838,6 +978,20 @@ WtMeanData<-as.data.frame(WtMeanData[complete.cases(WtMeanData),])
 
 WtMeanMod<-lm(BirdIndex~.^2,data=WtMeanData) # explains 4.4% of variance
 SimpleMeanMod<-lm(BirdIndex~NetESS,data=WtMeanData) # explains 1.6% of variance
+
+############################################################################################################
+### 08.14 NetESS variation between biogeographical regions
+############################################################################################################
+
+kruskal.test(as.numeric(NetESS)~-1+SubBiogeog,data=SubGroupData2)
+TukeyHSD(MODEL)
+boxplot(as.numeric(as.vector(NetESS))~SubBiogeog,data=SubGroupData2)
+
+############################################################################################################
+### 08.14 GIS data source
+############################################################################################################
+
+http://www.eea.europa.eu/ds_resolveuid/0cb5db55a14548e28344f867bc2d25c9
 
 ############################################################################################################
 ### 08.14 Code Graveyard
