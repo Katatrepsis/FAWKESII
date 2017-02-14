@@ -601,6 +601,136 @@ lines(newx,preds[,1],type="l")
 # intervals
 lines(newx, preds[ ,3], lty = 'dashed', col = 'red');lines(newx, preds[ ,2], lty = 'dashed', col = 'red')
 
+
+
+############################################################################
+### 08.6b Site-centred conservation and IUCN indices - by Biogeographical regions
+###
+### This script takes the site as the unit of replication and calculates
+### the "conservation index" (the mean habitat quality for the community
+### of bird species living at the site) and the "IUCN index" (the mean
+### IUCN trend for the species living at the site)
+### in addition, this script runs the analysis by Biogeographical regions
+############################################################################
+
+# Convert the A, B, C CONSERVATION code to a numeric score
+SPECIES<-read.csv("SPECIES.csv")
+ConvertToNumber<-data.frame(Letters=c("A","B","C"),Numbers=c(2,1,0))
+SpeciesIndex<-ConvertToNumber[match(SPECIES$CONSERVATION,ConvertToNumber[,1]),2]
+SPECIES$SpeciesIndex<-SpeciesIndex
+
+# add Bioregions
+SPECIES$Biogeog<-BIOREGION$BIOGEFRAPHICREG[match(SPECIES$SITECODE,BIOREGION$SITECODE)]
+SiteTrends$Biogeog<-BIOREGION$BIOGEFRAPHICREG[match(SiteTrends$Site,BIOREGION$SITECODE)]
+#regions<-unique(SPECIES$Biogeog)
+#regions <- regions[!is.na(regions)]
+#remove macaronesia
+#regions <- regions[c(1:11,13:14)]
+regions<-c("Boreal","Atlantic","Alpine","Continental","Mediterranean")
+
+for(a in 1:length(regions)){
+  sub_SPECIES<-subset(SPECIES,SPECIES$Biogeog==paste(regions[a]))
+  sub_ServiceBySite<-subset(ServiceBySite,ServiceBySite$Biogeog==paste(regions[a]))
+  sub_SiteTrends<-subset(SiteTrends,SiteTrends$Biogeog==paste(regions[a]))
+  sub_NetESS<-NetESS[match(rownames(sub_ServiceBySite),names(NetESS))]
+  
+  BIRDSPECIES<-subset(sub_SPECIES,sub_SPECIES$SPGROUP=="Birds" & sub_SPECIES$GLOBAL %in% c("A","B","C"))
+
+  # Add bird scores to the sites
+  IUCNIndex<-BirdIndex<-IUCNNumber<-BirdNumber<-numeric(length=nrow(sub_ServiceBySite))
+  for(x in 1:nrow(sub_ServiceBySite)){
+    BirdIndex[x]<-mean(subset(BIRDSPECIES$SpeciesIndex,BIRDSPECIES$SITECODE==rownames(sub_ServiceBySite)[x]))
+    BirdNumber[x]<-length(subset(BIRDSPECIES$SpeciesIndex,BIRDSPECIES$SITECODE==rownames(sub_ServiceBySite)[x]))
+    IUCNIndex[x]<-mean(c(rep(2,subset(sub_SiteTrends$Inc,sub_SiteTrends$Site==rownames(sub_ServiceBySite)[x])),
+                         rep(1,subset(sub_SiteTrends$Stable,sub_SiteTrends$Site==rownames(sub_ServiceBySite)[x])),
+                         rep(0,subset(sub_SiteTrends$Dec,sub_SiteTrends$Site==rownames(sub_ServiceBySite)[x]))))
+    IUCNNumber[x]<-sum(subset(sub_SiteTrends$Inc,sub_SiteTrends$Site==rownames(sub_ServiceBySite)[x]),
+                       subset(sub_SiteTrends$Stable,sub_SiteTrends$Site==rownames(sub_ServiceBySite)[x]),
+                       subset(sub_SiteTrends$Dec,sub_SiteTrends$Site==rownames(sub_ServiceBySite)[x]))
+    if(x%%100==0) {print(x)}
+    flush.console()
+  }
+
+  SiteData<-cbind(IUCNIndex,BirdIndex,IUCNNumber,BirdNumber,sub_NetESS)
+  # add Bioregions
+  
+  SiteData<-data.frame(SiteData, Biogeog=as.factor(BIOREGION[match(rownames(SiteData),BIOREGION$SITECODE),2]))
+  SiteData<-as.data.frame(SiteData[complete.cases(SiteData),])
+  
+  par(mfrow=c(1,2),mar=c(5,4,4,2))
+  
+  #plot(sub_NetESS,BirdIndex,xlab="sub_NetESS",ylab="Conservation index")
+  #mtext("A",cex=2,at=3)
+  #plot(sub_NetESS,IUCNIndex,xlab="sub_NetESS",ylab="IUCN trends index")
+  #mtext("B",cex=2,at=3)
+  
+  SummaryBirdData<-matrix(ncol=4,nrow=13)
+  colnames(SummaryBirdData)<-c("sub_NetESS","MeanBirdStatus","SE","N")
+  for(x in 1:13){
+    SummaryBirdData[x,1]<-x-9
+    SummaryBirdData[x,2]<-mean(subset(BirdIndex,sub_NetESS==x-9),na.rm=TRUE)
+    SummaryBirdData[x,3]<-sd(subset(BirdIndex,sub_NetESS==x-9),na.rm=TRUE)/sqrt(length(subset(BirdIndex,sub_NetESS==x-9)))
+    SummaryBirdData[x,4]<-length(subset(BirdIndex,sub_NetESS==x-9))
+  }
+  plot(SummaryBirdData[,1],SummaryBirdData[,2],ylim=c(0,2),xlim=c(-9,6),ylab="Conservation index",xlab="Net ESS", main=paste(regions[a]))
+  #arrows(SummaryBirdData[,1],SummaryBirdData[,2],SummaryBirdData[,1],SummaryBirdData[,2]+SummaryBirdData[,3],length=0)
+  #arrows(SummaryBirdData[,1],SummaryBirdData[,2],SummaryBirdData[,1],SummaryBirdData[,2]-SummaryBirdData[,3],length=0)
+  res<-cor.test(sub_NetESS,BirdIndex,method="spearman")
+  mtext(paste("p-value",round(res$p.value,digits=4)),side=3)
+  #abline(lm(SummaryBirdData[,2]~SummaryBirdData[,1],weights=SummaryBirdData[,4]))
+  text(-7,1.75,"A",cex=2)
+  points(jitter(sub_NetESS),BirdIndex,col="lightgrey",cex=0.5)
+  points(SummaryBirdData[,1],SummaryBirdData[,2],pch=19)
+  mod1<-lm(BirdIndex~sub_NetESS,data=SiteData)
+  newx <- seq(min(sub_NetESS), max(sub_NetESS), length.out=100)
+  preds <- predict(mod1, newdata = data.frame(sub_NetESS=newx), interval = 'confidence')
+  #plot(sub_NetESS,BirdIndex, type = 'n',ylim=c(0.5,0.7))
+  # add fill
+  polygon(c(rev(newx), newx), c(rev(preds[ ,3]), preds[ ,2]), col = rgb(0.1,0.1,0.1,0.2), border = NA)
+  # model
+  lines(newx,preds[,1],type="l")
+  #abline(mod1)
+  # intervals
+  lines(newx, preds[ ,3], lty = 'dashed', col = 'red');lines(newx, preds[ ,2], lty = 'dashed', col = 'red')
+  
+  # Net ESS versus IUCN status
+  
+  SummaryIUCNData<-matrix(ncol=4,nrow=13)
+  colnames(SummaryIUCNData)<-c("sub_NetESSwt","MeanBirdStatus","SE","N")
+  for(x in 1:13){
+    SummaryIUCNData[x,1]<-x-9
+    SummaryIUCNData[x,2]<-mean(subset(IUCNIndex,sub_NetESS==x-9),na.rm=TRUE)
+    SummaryIUCNData[x,3]<-sd(subset(IUCNIndex,sub_NetESS==x-9),na.rm=TRUE)/sqrt(length(subset(IUCNIndex,sub_NetESS==x-9)))
+    SummaryIUCNData[x,4]<-length(subset(IUCNIndex,sub_NetESS==x-9))
+  }
+  plot(SummaryIUCNData[,1],SummaryIUCNData[,2],ylim=c(0,2),xlim=c(-9,6),ylab="IUCN trends index",xlab="Net ESS")
+  #arrows(SummaryIUCNData[,1],SummaryIUCNData[,2],SummaryIUCNData[,1],SummaryIUCNData[,2]+SummaryIUCNData[,3],length=0)
+  #arrows(SummaryIUCNData[,1],SummaryIUCNData[,2],SummaryIUCNData[,1],SummaryIUCNData[,2]-SummaryIUCNData[,3],length=0)
+  res<-cor.test(sub_NetESS,IUCNIndex,method="spearman")
+  mtext(paste("p-value",round(res$p.value,digits=4)),side=3)
+  #abline(lm(SummaryIUCNData[,2]~SummaryIUCNData[,1],weights=SummaryIUCNData[,4]))
+  text(-7,1.8,"B",cex=2)
+  points(jitter(sub_NetESS),IUCNIndex,col="lightgrey",cex=0.5)
+  points(SummaryIUCNData[,1],SummaryIUCNData[,2],pch=19)
+  mod2<-lm(IUCNIndex~sub_NetESS,data=SiteData)
+  newx <- seq(min(sub_NetESS), max(sub_NetESS), length.out=100)
+  preds <- predict(mod2, newdata = data.frame(sub_NetESS=newx), interval = 'confidence')
+  #plot(sub_NetESS,IUCNIndex, type = 'n',ylim=c(0.5,0.7))
+  # add fill
+  polygon(c(rev(newx), newx), c(rev(preds[ ,3]), preds[ ,2]), col = rgb(0.1,0.1,0.1,0.2), border = NA)
+  # model
+  lines(newx,preds[,1],type="l")
+  # intervals
+  lines(newx, preds[ ,3], lty = 'dashed', col = 'red');lines(newx, preds[ ,2], lty = 'dashed', col = 'red')
+}
+
+
+
+
+
+
+
+
 ############################################################################
 ### 08.7 Bird conservation (from N2000) and IUCN status by mean net ESS
 ###

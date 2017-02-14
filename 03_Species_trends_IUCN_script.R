@@ -76,6 +76,9 @@ write.table(statusTable,"IUCNOutput.txt")
 # Create character vectors into which to extract IUCN data
 NumberDirectiveSp<-IncreasingSp<-DecreasingSp<-StableSp<-UnknownSp<-integer()
 
+# get the same levels
+N2000Species$SITECODE<-factor(N2000Species$SITECODE, levels=levels(N2000SPASiteCodes))
+
 # Loop through each Natura 2000 site to extract data and save to the vector
 ptm <- proc.time() # ca. 2 mins
 for(x in 1:length(N2000SPASiteCodes)){
