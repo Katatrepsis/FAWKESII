@@ -132,9 +132,9 @@ for(x in 1:nrow(ServiceBySite)){
   SiteServices<-subset(N2000Impact,N2000Impact$SITECODE==rownames(ServiceBySite)[x])
   # For each service group (defined by Guy), sum the number of times it was positive or negative
   for(y in 1:length(ServiceList)){
-    if(nrow(subset(SiteServices,SiteServices[,10+y] %in% c("c","x") & SiteServices$IMPACT_TYPE=="P"))>0) {ServiceBySite[x,y] <- 1} else {ServiceBySite[x,y] <- 0}
-    if(nrow(subset(SiteServices,SiteServices[,10+y] %in% c("c","x") & SiteServices$IMPACT_TYPE=="N"))>0) {ServiceBySite[x,y+9] <- 1} else {ServiceBySite[x,y+9] <- 0}
-    if("P"%in%subset(SiteServices,SiteServices[,10+y] %in% c("c","x"))$IMPACT_TYPE & "N"%in%subset(SiteServices,SiteServices[,10+y] %in% c("c","x"))$IMPACT_TYPE) {ServiceBySite[x,y+18]<-1;ServiceBySite[x,y] <- 0;ServiceBySite[x,y+9] <- 0} else {ServiceBySite[x,y+18]<-0}
+    if(nrow(subset(SiteServices,SiteServices[,10+y] %in% c("c") & SiteServices$IMPACT_TYPE=="P"))>0) {ServiceBySite[x,y] <- 1} else {ServiceBySite[x,y] <- 0}
+    if(nrow(subset(SiteServices,SiteServices[,10+y] %in% c("c") & SiteServices$IMPACT_TYPE=="N"))>0) {ServiceBySite[x,y+9] <- 1} else {ServiceBySite[x,y+9] <- 0}
+    if("P"%in%subset(SiteServices,SiteServices[,10+y] %in% c("c"))$IMPACT_TYPE & "N"%in%subset(SiteServices,SiteServices[,10+y] %in% c("c"))$IMPACT_TYPE) {ServiceBySite[x,y+18]<-1;ServiceBySite[x,y] <- 0;ServiceBySite[x,y+9] <- 0} else {ServiceBySite[x,y+18]<-0}
     ServiceBySite[x,y+27]<-ServiceBySite[x,y]-ServiceBySite[x,y+9]
   }
   # Timer to track progress of loop
@@ -150,6 +150,8 @@ ServiceBySite<-cbind(ServiceBySite,NetESS,NetESSwt)
 # Add Bioregion (note that sometimes the BIOREGION$SITECODE field is called "i..SITECODE" which
 # causes problems with matching the datasets - it may depend on operating system)
 BIOREGION<-read.csv("BIOREGION.csv")
+# Change column name from "ï..SITECODE" to "SITECODE"
+colnames(BIOREGION)[1] <- "SITECODE"
 ServiceBySite<-data.frame(ServiceBySite,Biogeog=as.factor(BIOREGION[match(rownames(ServiceBySite),BIOREGION$SITECODE),2]))
 
 
@@ -203,6 +205,13 @@ Alpine_BarData<-cbind(colSums(Alpine_ServiceBySite[,c(1:9)]),colSums(Alpine_Serv
 rownames(Alpine_BarData) <- ServiceList
 colnames(Alpine_BarData) <- c("POS","BOTH","NEG")
 barplot(t(Alpine_BarData/rowSums(Alpine_BarData)),las=2, legend=F, main="(F) Alpine SPAs",names.arg=ESLabels)
+
+# Export data
+BiogeogOrigin<-cbind(rbind(All_BarData,Atlantic_BarData,Continental_BarData,Mediterranean_BarData,Boreal_BarData,Alpine_BarData),
+      rep(c("All","Atlantic","Continental","Mediterranean","Boreal","Alpine"),each=9))
+write.table(BiogeogOrigin,"BiogeogOrigin_CONSERVATIVE.txt")
+
+
 
 # 2: STACKED BARS SHOWING ABSOLUTE NUMBERS
 
@@ -302,6 +311,8 @@ barplot(t(Alpine_BarData),las=2, legend=F, main="(F) Alpine SPAs",names.arg=ESLa
 
 # Load HABITATCLASS
 HABITATCLASS<-read.csv("HABITATCLASS.csv")
+# Change column name from "ï..SITECODE" to "SITECODE"
+colnames(HABITATCLASS)[1] <- "SITECODE"
 # Convert % cover to a numeric variable
 HABITATCLASS$PERCENTAGECOVER<-as.numeric(as.vector(HABITATCLASS$PERCENTAGECOVER))
 # Extract a subset where the % cover is >=50%
@@ -503,6 +514,8 @@ barplot(t(as.matrix(subset(OnlyHeathGrassESS,OnlyHeathGrassESS$ESS=="Recreation"
 barplot(t(as.matrix(subset(OnlyFarmESS,OnlyFarmESS$ESS=="Recreation")))[,rev(c(1:14))],add=TRUE,col=c("goldenrod4","goldenrod3","goldenrod2"),horiz=TRUE,xlim=c(0,1),axisnames=FALSE)
 barplot(t(as.matrix(subset(OnlyWoodESS,OnlyWoodESS$ESS=="Recreation")))[,rev(c(1:14))],add=TRUE,col=c("darkgreen","green","lightgreen"),horiz=TRUE,xlim=c(0,1),axisnames=FALSE)
 
+# Write to file for plotting in Origin
+write.table(AllESS,"AllESS by Dominant Habitat Origin CONSERVATIVE.txt")
 
 ############################################################################
 ### 08.6 Site-centred conservation and IUCN indices
@@ -601,7 +614,11 @@ lines(newx,preds[,1],type="l")
 # intervals
 lines(newx, preds[ ,3], lty = 'dashed', col = 'red');lines(newx, preds[ ,2], lty = 'dashed', col = 'red')
 
-
+# Export for plotting in Origin
+NetESSvsConsIndexvsIUCNraw<-cbind(jitter(NetESS),BirdIndex,IUCNIndex)
+NetESSvsConsIndexvsIUCNsummary<-cbind(SummaryBirdData,SummaryIUCNData)
+write.table(NetESSvsConsIndexvsIUCNraw,"NetESSvsConsIndexvsIUCNraw_CONSERVATIVE.txt")
+write.table(NetESSvsConsIndexvsIUCNsummary,"NetESSvsConsIndexvsIUCNsummary_CONSERVATIVE.txt")
 
 ############################################################################
 ### 08.6b Site-centred conservation and IUCN indices - by Biogeographical regions
@@ -722,7 +739,14 @@ for(a in 1:length(regions)){
   lines(newx,preds[,1],type="l")
   # intervals
   lines(newx, preds[ ,3], lty = 'dashed', col = 'red');lines(newx, preds[ ,2], lty = 'dashed', col = 'red')
-}
+  
+  # Export for plotting in Origin
+  NetESSvsConsIndexvsIUCNraw<-cbind(jitter(sub_NetESS),BirdIndex,IUCNIndex)
+  NetESSvsConsIndexvsIUCNsummary<-cbind(SummaryBirdData,SummaryIUCNData)
+  write.table(NetESSvsConsIndexvsIUCNraw,paste(c("NetESSvsConsIndexvsIUCNraw_",regions[a],"_CONSERVATIVE.txt"),sep="",collapse=""))
+  write.table(NetESSvsConsIndexvsIUCNsummary,paste(c("NetESSvsConsIndexvsIUCNsummary_",regions[a],"_CONSERVATIVE.txt"),sep="",collapse=""))
+
+  }
 
 
 
@@ -923,6 +947,27 @@ CombinedCoocData<-cbind(ESS1=AnyCoocData2[,1],ESS2=AnyCoocData2[,2],ESSCombined=
                         AnyCooc=AnyCoocData2[,3],
                         NegCooc=NegCoocData2[match(AnyCoocData2[c(1:36),4],NegCoocData2[,4]),3],
                         PosCooc=PosCoocData2[match(AnyCoocData2[c(1:36),4],PosCoocData2[,4]),3])
+
+PosCoocTable<-matrix(ncol=9,nrow=9)
+rownames(PosCoocTable)<-colnames(PosCoocTable)<-c("Aquaculture","Crop","Fibre","Fodder","Livestock","Water","Wild.food","Regulating","Recreation")
+AnyCoocTable<-NegCoocTable<-PosCoocTable
+
+for(x in 1:nrow(CombinedCoocData)){
+    PosCoocTable[which(rownames(PosCoocTable)==CombinedCoocData[x,1]),
+                 which(colnames(PosCoocTable)==CombinedCoocData[x,2])]<-CombinedCoocData[x,6]
+    PosCoocTable[which(rownames(PosCoocTable)==CombinedCoocData[x,2]),
+                 which(colnames(PosCoocTable)==CombinedCoocData[x,1])]<-CombinedCoocData[x,6]
+    NegCoocTable[which(rownames(NegCoocTable)==CombinedCoocData[x,1]),
+                 which(colnames(NegCoocTable)==CombinedCoocData[x,2])]<-CombinedCoocData[x,5]
+    NegCoocTable[which(rownames(NegCoocTable)==CombinedCoocData[x,2]),
+                 which(colnames(NegCoocTable)==CombinedCoocData[x,1])]<-CombinedCoocData[x,5]
+    AnyCoocTable[which(rownames(AnyCoocTable)==CombinedCoocData[x,1]),
+                 which(colnames(AnyCoocTable)==CombinedCoocData[x,2])]<-CombinedCoocData[x,4]
+    AnyCoocTable[which(rownames(AnyCoocTable)==CombinedCoocData[x,2]),
+                 which(colnames(AnyCoocTable)==CombinedCoocData[x,1])]<-CombinedCoocData[x,4]
+}
+
+
 
 ###############################################################
 ### 08.11 Co-occurrence analysis excluding ESS mapped to multiple threats
