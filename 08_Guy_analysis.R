@@ -743,8 +743,8 @@ for(a in 1:length(regions)){
   # Export for plotting in Origin
   NetESSvsConsIndexvsIUCNraw<-cbind(jitter(sub_NetESS),BirdIndex,IUCNIndex)
   NetESSvsConsIndexvsIUCNsummary<-cbind(SummaryBirdData,SummaryIUCNData)
-  write.table(NetESSvsConsIndexvsIUCNraw,paste(c("NetESSvsConsIndexvsIUCNraw_",regions[a]"),sep="",collapse=""))
-  write.table(NetESSvsConsIndexvsIUCNsummary,paste(c("NetESSvsConsIndexvsIUCNsummary_",regions[a]"),sep="",collapse=""))
+  write.table(NetESSvsConsIndexvsIUCNraw,paste(c("NetESSvsConsIndexvsIUCNraw_",regions[a]),sep="",collapse=""))
+  write.table(NetESSvsConsIndexvsIUCNsummary,paste(c("NetESSvsConsIndexvsIUCNsummary_",regions[a]),sep="",collapse=""))
 
   }
 
@@ -1294,7 +1294,7 @@ boxplot(as.numeric(as.vector(NetESS))~SubBiogeog,data=SubGroupData2)
 ### 08.14 GIS data source
 ############################################################################################################
 
-http://www.eea.europa.eu/ds_resolveuid/0cb5db55a14548e28344f867bc2d25c9
+#http://www.eea.europa.eu/ds_resolveuid/0cb5db55a14548e28344f867bc2d25c9
 
 ############################################################################################################
 ### 08.14 Examples of positive and negative ESS
