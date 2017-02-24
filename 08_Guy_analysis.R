@@ -132,9 +132,9 @@ for(x in 1:nrow(ServiceBySite)){
   SiteServices<-subset(N2000Impact,N2000Impact$SITECODE==rownames(ServiceBySite)[x])
   # For each service group (defined by Guy), sum the number of times it was positive or negative
   for(y in 1:length(ServiceList)){
-    if(nrow(subset(SiteServices,SiteServices[,10+y] %in% c("c") & SiteServices$IMPACT_TYPE=="P"))>0) {ServiceBySite[x,y] <- 1} else {ServiceBySite[x,y] <- 0}
-    if(nrow(subset(SiteServices,SiteServices[,10+y] %in% c("c") & SiteServices$IMPACT_TYPE=="N"))>0) {ServiceBySite[x,y+9] <- 1} else {ServiceBySite[x,y+9] <- 0}
-    if("P"%in%subset(SiteServices,SiteServices[,10+y] %in% c("c"))$IMPACT_TYPE & "N"%in%subset(SiteServices,SiteServices[,10+y] %in% c("c"))$IMPACT_TYPE) {ServiceBySite[x,y+18]<-1;ServiceBySite[x,y] <- 0;ServiceBySite[x,y+9] <- 0} else {ServiceBySite[x,y+18]<-0}
+    if(nrow(subset(SiteServices,SiteServices[,10+y] %in% c("c","x") & SiteServices$IMPACT_TYPE=="P"))>0) {ServiceBySite[x,y] <- 1} else {ServiceBySite[x,y] <- 0}
+    if(nrow(subset(SiteServices,SiteServices[,10+y] %in% c("c","x") & SiteServices$IMPACT_TYPE=="N"))>0) {ServiceBySite[x,y+9] <- 1} else {ServiceBySite[x,y+9] <- 0}
+    if("P"%in%subset(SiteServices,SiteServices[,10+y] %in% c("c","x"))$IMPACT_TYPE & "N"%in%subset(SiteServices,SiteServices[,10+y] %in% c("c","x"))$IMPACT_TYPE) {ServiceBySite[x,y+18]<-1;ServiceBySite[x,y] <- 0;ServiceBySite[x,y+9] <- 0} else {ServiceBySite[x,y+18]<-0}
     ServiceBySite[x,y+27]<-ServiceBySite[x,y]-ServiceBySite[x,y+9]
   }
   # Timer to track progress of loop
@@ -209,7 +209,7 @@ barplot(t(Alpine_BarData/rowSums(Alpine_BarData)),las=2, legend=F, main="(F) Alp
 # Export data
 BiogeogOrigin<-cbind(rbind(All_BarData,Atlantic_BarData,Continental_BarData,Mediterranean_BarData,Boreal_BarData,Alpine_BarData),
       rep(c("All","Atlantic","Continental","Mediterranean","Boreal","Alpine"),each=9))
-write.table(BiogeogOrigin,"BiogeogOrigin_CONSERVATIVE.txt")
+write.table(BiogeogOrigin,"BiogeogOrigin.txt")
 
 
 
@@ -515,7 +515,7 @@ barplot(t(as.matrix(subset(OnlyFarmESS,OnlyFarmESS$ESS=="Recreation")))[,rev(c(1
 barplot(t(as.matrix(subset(OnlyWoodESS,OnlyWoodESS$ESS=="Recreation")))[,rev(c(1:14))],add=TRUE,col=c("darkgreen","green","lightgreen"),horiz=TRUE,xlim=c(0,1),axisnames=FALSE)
 
 # Write to file for plotting in Origin
-write.table(AllESS,"AllESS by Dominant Habitat Origin CONSERVATIVE.txt")
+write.table(AllESS,"AllESS by Dominant Habitat Origin.txt")
 
 ############################################################################
 ### 08.6 Site-centred conservation and IUCN indices
@@ -617,8 +617,8 @@ lines(newx, preds[ ,3], lty = 'dashed', col = 'red');lines(newx, preds[ ,2], lty
 # Export for plotting in Origin
 NetESSvsConsIndexvsIUCNraw<-cbind(jitter(NetESS),BirdIndex,IUCNIndex)
 NetESSvsConsIndexvsIUCNsummary<-cbind(SummaryBirdData,SummaryIUCNData)
-write.table(NetESSvsConsIndexvsIUCNraw,"NetESSvsConsIndexvsIUCNraw_CONSERVATIVE.txt")
-write.table(NetESSvsConsIndexvsIUCNsummary,"NetESSvsConsIndexvsIUCNsummary_CONSERVATIVE.txt")
+write.table(NetESSvsConsIndexvsIUCNraw,"NetESSvsConsIndexvsIUCNraw.txt")
+write.table(NetESSvsConsIndexvsIUCNsummary,"NetESSvsConsIndexvsIUCNsummary.txt")
 
 ############################################################################
 ### 08.6b Site-centred conservation and IUCN indices - by Biogeographical regions
@@ -743,8 +743,8 @@ for(a in 1:length(regions)){
   # Export for plotting in Origin
   NetESSvsConsIndexvsIUCNraw<-cbind(jitter(sub_NetESS),BirdIndex,IUCNIndex)
   NetESSvsConsIndexvsIUCNsummary<-cbind(SummaryBirdData,SummaryIUCNData)
-  write.table(NetESSvsConsIndexvsIUCNraw,paste(c("NetESSvsConsIndexvsIUCNraw_",regions[a],"_CONSERVATIVE.txt"),sep="",collapse=""))
-  write.table(NetESSvsConsIndexvsIUCNsummary,paste(c("NetESSvsConsIndexvsIUCNsummary_",regions[a],"_CONSERVATIVE.txt"),sep="",collapse=""))
+  write.table(NetESSvsConsIndexvsIUCNraw,paste(c("NetESSvsConsIndexvsIUCNraw_",regions[a]"),sep="",collapse=""))
+  write.table(NetESSvsConsIndexvsIUCNsummary,paste(c("NetESSvsConsIndexvsIUCNsummary_",regions[a]"),sep="",collapse=""))
 
   }
 
@@ -868,6 +868,13 @@ par(mar=c(4,5,3,2))
 hist(NetESS,col="grey",main=NULL,ylab="Freqency",xlab="Net ESS")
 hist(rowSums(AnyMention),col="grey",main=NULL,ylab="Freqency",xlab="Number of ESS",breaks=c(0,1,2,3,4,5,6,7,8))
 
+# Spearman correlations between NetESS and bird index for different biogeographical regions
+cor.test(NetESS,BirdIndex,method="spearman")
+cor.test(subset(NetESS,ServiceBySite$Biogeog=="Alpine"),subset(BirdIndex,ServiceBySite$Biogeog=="Alpine"),method="spearman")
+cor.test(subset(NetESS,ServiceBySite$Biogeog=="Atlantic"),subset(BirdIndex,ServiceBySite$Biogeog=="Atlantic"),method="spearman")
+cor.test(subset(NetESS,ServiceBySite$Biogeog=="Boreal"),subset(BirdIndex,ServiceBySite$Biogeog=="Boreal"),method="spearman")
+cor.test(subset(NetESS,ServiceBySite$Biogeog=="Continental"),subset(BirdIndex,ServiceBySite$Biogeog=="Continental"),method="spearman")
+cor.test(subset(NetESS,ServiceBySite$Biogeog=="Mediterranean"),subset(BirdIndex,ServiceBySite$Biogeog=="Mediterranean"),method="spearman")
 
 ###############################################################
 ### 08.10 Sense check for "both" category
@@ -1167,6 +1174,171 @@ boxplot(as.numeric(as.vector(NetESS))~SubBiogeog,data=SubGroupData2)
 ############################################################################################################
 
 http://www.eea.europa.eu/ds_resolveuid/0cb5db55a14548e28344f867bc2d25c9
+
+############################################################################################################
+### 08.14 Examples of positive and negative ESS
+############################################################################################################
+
+
+# First, subset N2000Impact by intensity and occurrence
+N2000Impact<-subset(N2000Impact, N2000Impact$INTENSITY=="HIGH")
+N2000Impact<-subset(N2000Impact,N2000Impact$OCCURRENCE=="IN" | N2000Impact$OCCURRENCE=="BOTH")
+
+# Assign site type
+# Load data
+N2000Sites <- read.csv("NATURA2000SITES.csv")
+N2000Sites[,4] <- as.character(N2000Sites[,4])
+N2000Impact$SITE_TYPE <- NA
+
+# Add site type to N2000Impact (running time 117 seconds)
+for(x in 1:nrow(N2000Impact)){
+  N2000Impact$SITE_TYPE[x] <- N2000Sites[match(N2000Impact$SITECODE[x],N2000Sites$SITECODE),4]
+}
+
+# Now subset to exclude SITE_TYPE="B"
+N2000Impact<-subset(N2000Impact,N2000Impact$SITE_TYPE %in% c("A"))
+
+# Bind Guy's mapping to the threats table
+N2000Impact<-cbind(N2000Impact,GuyMappingData[match(N2000Impact$IMPACTCODE,GuyMappingData$ACT_Code),])
+
+# Create a list of services based on Guy's mapping 
+ServiceList<-names(GuyMappingData[,c(3:11)])
+
+ServiceBySite<-matrix(ncol=length(ServiceList)*4,nrow=length(unique(N2000Impact$SITECODE)))
+rownames(ServiceBySite)<-unique(N2000Impact$SITECODE)
+colnames(ServiceBySite)<-c(paste(ServiceList,"POS"),paste(ServiceList,"NEG"),paste(ServiceList,"BOTH"),paste(ServiceList,"NET"))
+
+# Run through mapping and tally the positive (in the first 9 columns) and negative (second 9 columns)
+# ESS associated with each site. Then calculate the difference between the two to give a net score for each
+# ESS on each site
+ptm <- proc.time()
+for(x in 1:nrow(ServiceBySite)){
+  # For each unique site ID code, extract a list of threats that have corresponding services
+  SiteServices<-subset(N2000Impact,N2000Impact$SITECODE==rownames(ServiceBySite)[x])
+  # For each service group (defined by Guy), sum the number of times it was positive or negative
+  for(y in 1:length(ServiceList)){
+    if(nrow(subset(SiteServices,SiteServices[,10+y] %in% c("c","x") & SiteServices$IMPACT_TYPE=="P"))>0) {ServiceBySite[x,y] <- 1} else {ServiceBySite[x,y] <- 0}
+    if(nrow(subset(SiteServices,SiteServices[,10+y] %in% c("c","x") & SiteServices$IMPACT_TYPE=="N"))>0) {ServiceBySite[x,y+9] <- 1} else {ServiceBySite[x,y+9] <- 0}
+    if("P"%in%subset(SiteServices,SiteServices[,10+y] %in% c("c","x"))$IMPACT_TYPE & "N"%in%subset(SiteServices,SiteServices[,10+y] %in% c("c","x"))$IMPACT_TYPE) {ServiceBySite[x,y+18]<-1;ServiceBySite[x,y] <- 0;ServiceBySite[x,y+9] <- 0} else {ServiceBySite[x,y+18]<-0}
+    ServiceBySite[x,y+27]<-ServiceBySite[x,y]-ServiceBySite[x,y+9]
+  }
+  # Timer to track progress of loop
+  if(x %% 100 == 0) {print(x/nrow(ServiceBySite));flush.console()}
+}
+proc.time() - ptm
+
+# Final "net" value for all ESS across each site
+NetESS<-rowSums(ServiceBySite[,c(28:36)])
+NetESSwt<-rowSums(ServiceBySite[,c(28:34)])/7+ServiceBySite[,35]+ServiceBySite[,36]
+ServiceBySite<-cbind(ServiceBySite,NetESS,NetESSwt)
+
+# Add Bioregion (note that sometimes the BIOREGION$SITECODE field is called "i..SITECODE" which
+# causes problems with matching the datasets - it may depend on operating system)
+BIOREGION<-read.csv("BIOREGION.csv")
+# Change column name from "ï..SITECODE" to "SITECODE"
+colnames(BIOREGION)[1] <- "SITECODE"
+ServiceBySite<-data.frame(ServiceBySite,Biogeog=as.factor(BIOREGION[match(rownames(ServiceBySite),BIOREGION$SITECODE),2]))
+
+test1a<-subset(ServiceBySite,ServiceBySite[,1]==1 & 
+               ServiceBySite[,10]!=1 & 
+               ServiceBySite[,19]!=1 &
+               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+test2a<-subset(ServiceBySite,ServiceBySite[,2]==1 & 
+               ServiceBySite[,11]!=1 & 
+               ServiceBySite[,20]!=1 &
+               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+test3a<-subset(ServiceBySite,ServiceBySite[,3]==1 & 
+               ServiceBySite[,12]!=1 & 
+               ServiceBySite[,21]!=1 &
+               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+test4a<-subset(ServiceBySite,ServiceBySite[,4]==1 & 
+               ServiceBySite[,13]!=1 & 
+               ServiceBySite[,22]!=1 &
+               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+test5a<-subset(ServiceBySite,ServiceBySite[,5]==1 & 
+               ServiceBySite[,14]!=1 & 
+               ServiceBySite[,23]!=1 &
+               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+test6a<-subset(ServiceBySite,ServiceBySite[,6]==1 & 
+               ServiceBySite[,15]!=1 & 
+               ServiceBySite[,24]!=1 &
+               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+test7a<-subset(ServiceBySite,ServiceBySite[,7]==1 & 
+               ServiceBySite[,16]!=1 & 
+               ServiceBySite[,25]!=1 &
+               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+test8a<-subset(ServiceBySite,ServiceBySite[,8]==1 & 
+              ServiceBySite[,17]!=1 & 
+               ServiceBySite[,26]!=1 &
+               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+test9a<-subset(ServiceBySite,ServiceBySite[,9]==1 & 
+               ServiceBySite[,18]!=1 & 
+               ServiceBySite[,27]!=1 &
+               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+
+test1b<-subset(ServiceBySite,ServiceBySite[,1]!=1 & 
+                ServiceBySite[,10]==1 & 
+                ServiceBySite[,19]!=1 &
+                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+test2b<-subset(ServiceBySite,ServiceBySite[,2]!=1 & 
+                ServiceBySite[,11]==1 & 
+                ServiceBySite[,20]!=1 &
+                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+test3b<-subset(ServiceBySite,ServiceBySite[,3]!=1 & 
+                ServiceBySite[,12]==1 & 
+                ServiceBySite[,21]!=1 &
+                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+test4b<-subset(ServiceBySite,ServiceBySite[,4]!=1 & 
+                ServiceBySite[,13]==1 & 
+                ServiceBySite[,22]!=1 &
+                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+test5b<-subset(ServiceBySite,ServiceBySite[,5]!=1 & 
+                ServiceBySite[,14]==1 & 
+                ServiceBySite[,23]!=1 &
+                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+test6b<-subset(ServiceBySite,ServiceBySite[,6]!=1 & 
+                ServiceBySite[,15]==1 & 
+                ServiceBySite[,24]!=1 &
+                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+test7b<-subset(ServiceBySite,ServiceBySite[,7]!=1 & 
+                ServiceBySite[,16]==1 & 
+                ServiceBySite[,25]!=1 &
+                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+test8b<-subset(ServiceBySite,ServiceBySite[,8]!=1 & 
+                ServiceBySite[,17]==1 & 
+                ServiceBySite[,26]!=1 &
+                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+test9b<-subset(ServiceBySite,ServiceBySite[,9]!=1 & 
+                ServiceBySite[,18]==1 & 
+                ServiceBySite[,27]!=1 &
+                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+
+AllHighESS<-rbind(test1a,test2a,test3a,test4a,test5a,test6a,test7a,test8a,test9a,
+      test1b,test2b,test3b,test4b,test5b,test6b,test7b,test8b,test9b)
+
+AllHighESS$ESSType<-c(rep(paste(ServiceList[1],"positive"),nrow(test1a)),
+  rep(paste(ServiceList[2],"positive"),nrow(test2a)),
+  rep(paste(ServiceList[3],"positive"),nrow(test3a)),
+  rep(paste(ServiceList[4],"positive"),nrow(test4a)),
+  rep(paste(ServiceList[5],"positive"),nrow(test5a)),
+  rep(paste(ServiceList[6],"positive"),nrow(test6a)),
+  rep(paste(ServiceList[7],"positive"),nrow(test7a)),
+  rep(paste(ServiceList[8],"positive"),nrow(test8a)),
+  rep(paste(ServiceList[9],"positive"),nrow(test9a)),
+  rep(paste(ServiceList[1],"negative"),nrow(test1b)),
+  rep(paste(ServiceList[2],"negative"),nrow(test2b)),
+  rep(paste(ServiceList[3],"negative"),nrow(test3b)),
+  rep(paste(ServiceList[4],"negative"),nrow(test4b)),
+  rep(paste(ServiceList[5],"negative"),nrow(test5b)),
+  rep(paste(ServiceList[6],"negative"),nrow(test6b)),
+  rep(paste(ServiceList[7],"negative"),nrow(test7b)),
+  rep(paste(ServiceList[8],"negative"),nrow(test8b)),
+  rep(paste(ServiceList[9],"negative"),nrow(test9b)))  
+
+AllHighESS$SITECODE<-rownames(AllHighESS)
+
+write.table(AllHighESS[,c(40:41)],"Guy High ESS table.txt")
+
 
 ############################################################################################################
 ### 08.14 Code Graveyard
