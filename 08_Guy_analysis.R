@@ -1363,76 +1363,76 @@ ServiceBySite<-data.frame(ServiceBySite,Biogeog=as.factor(BIOREGION[match(rownam
 test1a<-subset(ServiceBySite,ServiceBySite[,1]==1 & 
                ServiceBySite[,10]!=1 & 
                ServiceBySite[,19]!=1 &
-               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ","AT"))
 test2a<-subset(ServiceBySite,ServiceBySite[,2]==1 & 
                ServiceBySite[,11]!=1 & 
                ServiceBySite[,20]!=1 &
-               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ","AT"))
 test3a<-subset(ServiceBySite,ServiceBySite[,3]==1 & 
                ServiceBySite[,12]!=1 & 
                ServiceBySite[,21]!=1 &
-               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ","AT"))
 test4a<-subset(ServiceBySite,ServiceBySite[,4]==1 & 
                ServiceBySite[,13]!=1 & 
                ServiceBySite[,22]!=1 &
-               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ","AT"))
 test5a<-subset(ServiceBySite,ServiceBySite[,5]==1 & 
                ServiceBySite[,14]!=1 & 
                ServiceBySite[,23]!=1 &
-               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ","AT"))
 test6a<-subset(ServiceBySite,ServiceBySite[,6]==1 & 
                ServiceBySite[,15]!=1 & 
                ServiceBySite[,24]!=1 &
-               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ","AT"))
 test7a<-subset(ServiceBySite,ServiceBySite[,7]==1 & 
                ServiceBySite[,16]!=1 & 
                ServiceBySite[,25]!=1 &
-               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ","AT"))
 test8a<-subset(ServiceBySite,ServiceBySite[,8]==1 & 
               ServiceBySite[,17]!=1 & 
                ServiceBySite[,26]!=1 &
-               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ","AT"))
 test9a<-subset(ServiceBySite,ServiceBySite[,9]==1 & 
                ServiceBySite[,18]!=1 & 
                ServiceBySite[,27]!=1 &
-               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+               substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ","AT"))
 
 test1b<-subset(ServiceBySite,ServiceBySite[,1]!=1 & 
                 ServiceBySite[,10]==1 & 
                 ServiceBySite[,19]!=1 &
-                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ","AT"))
 test2b<-subset(ServiceBySite,ServiceBySite[,2]!=1 & 
                 ServiceBySite[,11]==1 & 
                 ServiceBySite[,20]!=1 &
-                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ","AT"))
 test3b<-subset(ServiceBySite,ServiceBySite[,3]!=1 & 
                 ServiceBySite[,12]==1 & 
                 ServiceBySite[,21]!=1 &
-                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ","AT"))
 test4b<-subset(ServiceBySite,ServiceBySite[,4]!=1 & 
                 ServiceBySite[,13]==1 & 
                 ServiceBySite[,22]!=1 &
-                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ","AT"))
 test5b<-subset(ServiceBySite,ServiceBySite[,5]!=1 & 
                 ServiceBySite[,14]==1 & 
                 ServiceBySite[,23]!=1 &
-                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ","AT"))
 test6b<-subset(ServiceBySite,ServiceBySite[,6]!=1 & 
                 ServiceBySite[,15]==1 & 
                 ServiceBySite[,24]!=1 &
-                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ","AT"))
 test7b<-subset(ServiceBySite,ServiceBySite[,7]!=1 & 
                 ServiceBySite[,16]==1 & 
                 ServiceBySite[,25]!=1 &
-                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ","AT"))
 test8b<-subset(ServiceBySite,ServiceBySite[,8]!=1 & 
                 ServiceBySite[,17]==1 & 
                 ServiceBySite[,26]!=1 &
-                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ","AT"))
 test9b<-subset(ServiceBySite,ServiceBySite[,9]!=1 & 
                 ServiceBySite[,18]==1 & 
                 ServiceBySite[,27]!=1 &
-                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ"))
+                substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ","AT"))
 
 AllHighESS<-rbind(test1a,test2a,test3a,test4a,test5a,test6a,test7a,test8a,test9a,
       test1b,test2b,test3b,test4b,test5b,test6b,test7b,test8b,test9b)
@@ -1457,9 +1457,25 @@ AllHighESS$ESSType<-c(rep(paste(ServiceList[1],"positive"),nrow(test1a)),
   rep(paste(ServiceList[9],"negative"),nrow(test9b)))  
 
 AllHighESS$SITECODE<-rownames(AllHighESS)
+AllHighESS$SITECODE[nchar(AllHighESS$SITECODE)==10]<-substr(AllHighESS$SITECODE,1,9)
+rownames(AllHighESS)[nchar(rownames(AllHighESS))==10]<-substr(rownames(AllHighESS),1,9)
+# Find management plan URLs where they exist
+# Load MANAGEMENT CSV into workspace
+management<-read.csv("MANAGEMENT.csv")
 
-write.table(AllHighESS[,c(40:41)],"Guy High ESS table.txt")
+# Create character vectors for site ID and PDF link
+management$SITECODE<-as.character(management$ï..SITECODE)
+management$MANAG_PLAN_URL<-as.character(management$MANAG_PLAN_URL)
 
+AllHighESS$PlanURL<-management$MANAG_PLAN_URL[match(AllHighESS$SITECODE,management$SITECODE)]
+AllHighESS$PlanExist<-management$MANAG_STATUS[match(AllHighESS$SITECODE,management$SITECODE)]
+AllHighESS$SiteName<-N2000Sites$SITENAME[match(AllHighESS$SITECODE,N2000Sites$SITECODE)]
+
+OutputHighESS<-AllHighESS[,c(40:44)]
+OutputHighESS[c(1:100),]
+write.table(OutputHighESS,"Guy High ESS table.txt")
+
+table(OutputHighESS$ESSType,OutputHighESS$PlanExist)
 
 ############################################################################################################
 ### 08.14 Code Graveyard
