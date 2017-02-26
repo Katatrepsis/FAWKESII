@@ -1434,6 +1434,26 @@ test9b<-subset(ServiceBySite,ServiceBySite[,9]!=1 &
                 ServiceBySite[,27]!=1 &
                 substr(rownames(ServiceBySite),1,2)%in%c("UK","PT","DE","ES","IT","CZ","AT"))
 
+test1a$SiteName<-rownames(test1a)
+test2a$SiteName<-rownames(test2a)
+test3a$SiteName<-rownames(test3a)
+test4a$SiteName<-rownames(test4a)
+test5a$SiteName<-rownames(test5a)
+test6a$SiteName<-rownames(test6a)
+test7a$SiteName<-rownames(test7a)
+test8a$SiteName<-rownames(test8a)
+test9a$SiteName<-rownames(test9a)
+
+test1b$SiteName<-rownames(test1b)
+test2b$SiteName<-rownames(test2b)
+test3b$SiteName<-rownames(test3b)
+test4b$SiteName<-rownames(test4b)
+test5b$SiteName<-rownames(test5b)
+test6b$SiteName<-rownames(test6b)
+test7b$SiteName<-rownames(test7b)
+test8b$SiteName<-rownames(test8b)
+test9b$SiteName<-rownames(test9b)
+
 AllHighESS<-rbind(test1a,test2a,test3a,test4a,test5a,test6a,test7a,test8a,test9a,
       test1b,test2b,test3b,test4b,test5b,test6b,test7b,test8b,test9b)
 
@@ -1456,9 +1476,8 @@ AllHighESS$ESSType<-c(rep(paste(ServiceList[1],"positive"),nrow(test1a)),
   rep(paste(ServiceList[8],"negative"),nrow(test8b)),
   rep(paste(ServiceList[9],"negative"),nrow(test9b)))  
 
-AllHighESS$SITECODE<-rownames(AllHighESS)
 AllHighESS$SITECODE[nchar(AllHighESS$SITECODE)==10]<-substr(AllHighESS$SITECODE,1,9)
-rownames(AllHighESS)[nchar(rownames(AllHighESS))==10]<-substr(rownames(AllHighESS),1,9)
+rownames(AllHighESS)<-NULL
 # Find management plan URLs where they exist
 # Load MANAGEMENT CSV into workspace
 management<-read.csv("MANAGEMENT.csv")
@@ -1467,12 +1486,21 @@ management<-read.csv("MANAGEMENT.csv")
 management$SITECODE<-as.character(management$ï..SITECODE)
 management$MANAG_PLAN_URL<-as.character(management$MANAG_PLAN_URL)
 
-AllHighESS$PlanURL<-management$MANAG_PLAN_URL[match(AllHighESS$SITECODE,management$SITECODE)]
-AllHighESS$PlanExist<-management$MANAG_STATUS[match(AllHighESS$SITECODE,management$SITECODE)]
-AllHighESS$SiteName<-N2000Sites$SITENAME[match(AllHighESS$SITECODE,N2000Sites$SITECODE)]
+AllHighESS$PlanURL<-management$MANAG_PLAN_URL[match(AllHighESS$SiteName,management$SITECODE)]
+AllHighESS$PlanExist<-management$MANAG_STATUS[match(AllHighESS$SiteName,management$SITECODE)]
+AllHighESS$SiteTitle<-N2000Sites$SITENAME[match(AllHighESS$SiteName,N2000Sites$SITECODE)]
 
 OutputHighESS<-AllHighESS[,c(40:44)]
 OutputHighESS[c(1:100),]
+
+subset(table(OutputHighESS$SiteName),table(OutputHighESS$SiteName)>1)
+
+subset(OutputHighESS,OutputHighESS$SiteName=="ES0000483")
+
+
+# Remove duplicate rows
+OutputHighESS<-OutputHighESS[!duplicated(OutputHighESS),]
+
 write.table(OutputHighESS,"Guy High ESS table.txt")
 
 table(OutputHighESS$ESSType,OutputHighESS$PlanExist)
